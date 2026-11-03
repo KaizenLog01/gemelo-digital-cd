@@ -394,7 +394,7 @@ input[type=datetime-local],input[type=number]{width:100%;min-width:0;padding:5px
         <nav class="zones" id="zones" aria-label="Sectores"></nav>
         <div class="pill"><button id="kpiBtn" aria-pressed="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span id="kpiLbl">Ocultar KPIs</span></button><span id="pillSum"></span></div>
         <div class="pill cfwrap"><button id="cfBtn" aria-haspopup="true" aria-expanded="false" aria-controls="cfMenu"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 4h18l-7 8.5V19l-4 2v-8.5z"/></svg><span id="cfLbl">Todos los clientes</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="cfmenu" id="cfMenu" hidden></div></div>
-        <div class="pill"><label for="viewSel" class="sr">Cámara</label><select id="viewSel"><option value="free">Cámara libre</option><option value="truck">Seguir camión en ruta</option><option value="op">Seguir operario</option><option value="fk">Seguir autoelevador</option></select></div>
+        <div class="pill"><label for="viewSel" class="sr">Cámara</label><select id="viewSel"><option value="free">Cámara libre</option><option value="truck">Seguir camión en ruta</option><option value="op">Seguir operario</option><option value="fk">Seguir autoelevador</option><option value="aisles">Recorrer pasillos</option></select></div>
       </div>
     </div>
     <div class="ov rail" role="toolbar" aria-label="Vista 3D">
@@ -896,13 +896,17 @@ function assignBreaks(){
 }
 function makeForklift(){
   const g=new THREE.Group(),P=[B(0xf2a900,[0,.72,0],[1.1,.75,1.9],'paint'),B(0x2b2e31,[0,.78,-1.05],[1.1,.85,.45]),B(0x2b2e31,[0,1.12,-.2],[.5,.08,.5]),
-    B(0x1f2225,[0,2.42,-.1],[1.06,.06,1.4]),B(0x3a3d40,[0,2.6,1.02],[.75,.08,.1]),B(0x3a3d40,[0,.48,1.12],[.8,.5,.06]),B(0x2b2e31,[-.25,.12,1.65],[.12,.05,1.1]),B(0x2b2e31,[.25,.12,1.65],[.12,.05,1.1]),
+    B(0x1f2225,[0,2.42,-.1],[1.06,.06,1.4]),B(0x3a3d40,[0,2.6,1.02],[.75,.08,.1]),
     ...jacket(.25,-.25),B(UNI.yel,[-.24,1.5,-.12],[.1,.1,.3]),B(UNI.yel,[.24,1.5,-.12],[.1,.1,.3]),B(UNI.blk,[-.2,1.4,.08],[.09,.09,.2]),B(UNI.blk,[.2,1.4,.08],[.09,.09,.2]),part(G.sphere,0xe2b48c,[0,1.85,-.25],null,[.12,.13,.12]),part(G.sphere,0xf5f5f5,[0,1.93,-.25],null,[.13,.07,.14]),
     B(0xe9a100,[0,2.47,-.1],[.25,.08,.25]),W(-.5,.32,.65,.32,.22),W(.5,.32,.65,.32,.22),W(-.5,.28,-.7,.28,.2),W(.5,.28,-.7,.28,.2)];
   for(const x of[-.5,.5])for(const z of[.55,-.75])P.push(B(0x1f2225,[x,1.75,z],[.06,1.3,.06]));
   for(const x of[-.33,.33])P.push(B(0x3a3d40,[x,1.35,1.02],[.09,2.6,.12]));
-  const body=new THREE.Mesh(merge(P),MAT.vc);body.castShadow=true;const load=new THREE.Mesh(G.loaded,MAT.vc);load.position.set(0,.16,1.72);load.castShadow=true;load.visible=false;
-  g.add(body,load);g.userData={load};return g;
+  const body=new THREE.Mesh(merge(P),MAT.vc);body.castShadow=true;
+  // mástil interior (sube en niveles altos) y carro portahorquillas con las uñas y la carga
+  const inner=new THREE.Group(),im=new THREE.Mesh(merge([B(0x55595d,[-.27,1.3,1.1],[.07,2.5,.09]),B(0x55595d,[.27,1.3,1.1],[.07,2.5,.09]),B(0x55595d,[0,2.52,1.1],[.6,.07,.09])]),MAT.vc);im.castShadow=true;inner.add(im);
+  const lift=new THREE.Group(),lm=new THREE.Mesh(merge([B(0x3a3d40,[0,.48,1.18],[.8,.5,.06]),B(0x2b2e31,[-.25,.12,1.7],[.12,.05,1.1]),B(0x2b2e31,[.25,.12,1.7],[.12,.05,1.1])]),MAT.vc);lm.castShadow=true;lift.add(lm);
+  const load=new THREE.Mesh(G.loaded,MAT.vc);load.position.set(0,.16,1.76);load.castShadow=true;load.visible=false;lift.add(load);
+  g.add(body,inner,lift);g.userData={load,lift,inner};return g;
 }
 /* carteles: tarjeta blanca con título y subtítulo, como en un mapa */
 function makeLabel(title,sub,w=5){
@@ -935,7 +939,7 @@ function init3D(){
   scene=new THREE.Scene();scene.background=new THREE.Color(css('--bg3d'));scene.fog=new THREE.Fog(scene.background.getHex(),230,520);
   camera=new THREE.PerspectiveCamera(38,1,.3,1000);
   controls=new THREE.OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.maxPolarAngle=Math.PI*.47;controls.minDistance=3;controls.maxDistance=300;controls.zoomSpeed=1.1;
-  controls.addEventListener('start',()=>{fly=null;setZonePressed(null)});
+  controls.addEventListener('start',()=>{fly=null;setZonePressed(null);if(camTour){camTour=null;aisleBadge(null);const s=$('#viewSel');if(s)s.value='free'}});
   hemi=new THREE.HemisphereLight(0xffffff,0xb7c1ca,1.0);scene.add(hemi);
   sun=new THREE.DirectionalLight(0xfffaf0,.8);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0005;sun.shadow.normalBias=.03;scene.add(sun,sun.target);
   const grass=new THREE.Mesh(new THREE.PlaneGeometry(1400,1400),MAT.grass);grass.rotation.x=-Math.PI/2;grass.position.y=-.08;grass.receiveShadow=true;scene.add(grass);
@@ -1243,7 +1247,7 @@ function syncAgents(){
   if(!agentRoot)return;const D=dims(),sf=cfShare(),want={op:CF?Math.min(opsAt(S.t),Math.max(opsAt(S.t)?1:0,Math.round(opsAt(S.t)*sf))):opsAt(S.t),fk:CF?Math.min(C.forklifts,Math.max(1,Math.round(C.forklifts*sf))):C.forklifts};
   for(const kind of['op','fk']){const cur=agents.filter(a=>a.kind===kind);
     while(cur.length<want[kind]){const g=kind==='op'?makeOperator():makeForklift();const N=navGrid(),sp=navNearest(N,kind,(Math.random()-.5)*D.halfW*1.2,D.mainZ,agents);g.position.set(sp.x,0,sp.z);agentRoot.add(g);
-      const a={g,kind,id:++AGENT_SEQ,path:[],route:[],goal:null,wait:0,hold:0,hasCart:kind==='op',slot:-1};if(kind==='op'){g.userData.aL.rotation.x=g.userData.aR.rotation.x=-1}agents.push(a);cur.push(a)}
+      const a={g,kind,id:++AGENT_SEQ,path:[],route:[],goal:null,wait:0,hold:0,hasCart:kind==='op',slot:-1,res:-1,carry:false,op:null};if(kind==='op'){g.userData.aL.rotation.x=g.userData.aR.rotation.x=-1}agents.push(a);cur.push(a)}
     while(cur.length>want[kind]){const a=cur.pop();agentRoot.remove(a.g);if(a.cart)agentRoot.remove(a.cart);agents.splice(agents.indexOf(a),1)}}
 }
 let AGENT_SEQ=0,NAV=null;
@@ -1278,14 +1282,14 @@ function navGrid(){
   NAV.comp={};for(const kind of['op','fk']){const c=new Uint8Array(n),sp=navNearest(NAV,kind,0,D.mainZ),s0=cj(sp.z)*W+ci(sp.x),q=[s0];c[s0]=1;
     for(let h=0;h<q.length;h++){const k=q[h],i=k%W,j=(k-i)/W;for(const[di,dj]of[[1,0],[-1,0],[0,1],[0,-1]]){const ii=i+di,jj=j+dj;if(ii<0||jj<0||ii>=W||jj>=H)continue;const kk=jj*W+ii;if(!c[kk]&&ok[kind][kk]){c[kk]=1;q.push(kk)}}}NAV.comp[kind]=c}
   NAV.reach=(kind,x,z)=>{const i=ci(x),j=cj(z);return i>=0&&j>=0&&i<W&&j<H&&!!NAV.comp[kind][j*W+i]};
-  NAV.cand={op:{},fk:{}};for(const r of GM.racks)for(let j=0;j<r.cells.length;j++){for(const kind of['op','fk']){if(kind==='fk'&&r.kind!=='rack')continue;const f=rackFace(GM,r,j,kind);if(NAV.reach(kind,f.x,f.z))(NAV.cand[kind][r.cl]=NAV.cand[kind][r.cl]||[]).push(f)}}
+  NAV.cand={op:{},fk:{}};for(const r of GM.racks)for(let j=0;j<r.cells.length;j++){for(const kind of['op','fk']){if(kind==='fk'&&r.kind!=='rack')continue;const f=rackFace(GM,r,j,kind);if(NAV.reach(kind,f.x,f.z))(NAV.cand[kind][r.cl]=NAV.cand[kind][r.cl]||[]).push({x:f.x,z:f.z,r:r.id,j})}}
   return NAV;
 }
 // celda libre más cercana (y lejos de otros agentes si se pasa la lista)
 function navNearest(N,kind,x,z,others){const ok=N.ok[kind],i0=Math.min(N.W-1,Math.max(0,N.ci(x))),j0=Math.min(N.H-1,Math.max(0,N.cj(z)));
   const seen=new Uint8Array(N.n),q=[j0*N.W+i0];seen[q[0]]=1;
   for(let h=0;h<q.length&&h<40000;h++){const k=q[h],i=k%N.W,j=(k-i)/N.W,px=N.cx(i),pz=N.cz(j);
-    if(ok[k]&&(!others||others.every(o=>Math.hypot(o.g.position.x-px,o.g.position.z-pz)>2.5)))return{x:px,z:pz};
+    if(ok[k]&&(!others||others.every(o=>Math.hypot(o.g.position.x-px,o.g.position.z-pz)>5)))return{x:px,z:pz};
     for(const[di,dj]of[[1,0],[-1,0],[0,1],[0,-1]]){const ii=i+di,jj=j+dj;if(ii<0||jj<0||ii>=N.W||jj>=N.H)continue;const kk=jj*N.W+ii;if(!seen[kk]){seen[kk]=1;q.push(kk)}}}
   return{x,z}}
 // A* con preferencia por el centro de los pasillos; si la meta no es alcanzable llega al punto libre más cercano
@@ -1329,7 +1333,7 @@ function breakRoom(kind){const GM=geom(C),D=dims();
     if(r){const x0=gx0(r[1])+.8,x1=gx0(r[3]+1)-.8,z0=gz0(r[2])+.8,z1=gz0(r[4]+1)-.8;return[x0+Math.random()*(x1-x0),z0+Math.random()*(z1-z0)]}}
   return[(kind==='lunch'?-1:1)*D.halfW*.7+(Math.random()-.5)*4,D.zBack+2+Math.random()*3]}
 function newPath(a){
-  const GM=geom(C),D=dims(),G=(x,z,c,act,t)=>({x,z,c:c||0,act,t});
+  const GM=geom(C),D=dims(),G=(x,z,c,act,t,i)=>({x,z,c:c||0,act,t,i});
   const zonePt=k=>{const z=clientZone(k);return[z.x0+.4+Math.random()*Math.max(.2,z.x1-z.x0-.8),z.z0+.4+Math.random()*Math.max(.2,z.z1-z.z0-.8)]};
   const N=navGrid(),rackOf=k=>{const L=N.cand[a.kind][k];if(L&&L.length)return L[Math.floor(Math.random()*L.length)];
     if(a.kind==='fk'){const[zx,zz]=zonePt(k);return{x:zx,z:zz}}
@@ -1339,11 +1343,26 @@ function newPath(a){
     if(st!=='work'){if(a.hasCart){const c=cartStand(freeSlot(a));p.push(G(c.x,c.z,0,'drop'))}const[x,z]=breakRoom(st);p.push(G(x,z,0,'park'));a.path=p;return}
     if(!a.hasCart){const c=cartStand(freeSlot(a));p.push(G(c.x,c.z,0,'take'))}
     const k=rndClient(),f=rackOf(k),[zx,zz]=zonePt(k);p.push(G(f.x,f.z,0,'wait',.6),G(zx,zz,0,'wait',.6));a.path=p;return}
-  const dz=D.zWall-2.6,docks=C.dockCfg.slice(0,C.docks).map((d,i)=>({d,i}));
-  if(Math.random()<.55){const ins=docks.filter(x=>(x.d.use==='in'||x.d.use==='both')&&(!CF||x.d.cl.some(inCF)));if(ins.length){const {d,i}=ins[Math.floor(Math.random()*ins.length)],dc=d.cl.filter(inCF),k=dc.length?dc[Math.floor(Math.random()*dc.length)]:rndClient(),f=rackOf(k),dx=dockX(i);
-    a.path=[G(dx,dz,0,'wait',.8),G(f.x,f.z,1,'wait',.8)];return}}
-  const k=rndClient(),outs=docks.filter(x=>dockAllows(C,x.i,k,'out')),pick=outs.length?outs[Math.floor(Math.random()*outs.length)]:docks[docks.length-1],dx=dockX(pick.i),[zx,zz]=zonePt(k);
-  a.path=[G(zx,zz,0,'wait',.8),G(dx,dz,1,'wait',.8)];
+  const dz=D.zWall-2.6,docks=C.dockCfg.slice(0,C.docks).map((d,i)=>({d,i}));a.res=-1;
+  // posición real del rack (hueco vacío o pallet ocupado) que nadie más tenga reservada
+  const taken=new Set(agents.filter(o=>o!==a&&o.res>=0).map(o=>o.res));
+  const pickSlot=(k,full)=>{const L=N.cand.fk[k];if(!L||!L.length)return null;
+    for(let t=0;t<60;t++){const f=L[Math.floor(Math.random()*L.length)],r=GM.racks[f.r-1],sl=Math.floor(Math.random()*(r.slots||1)),l=Math.floor(Math.random()*C.levels),i=GM.idx[r.id+'-'+(f.j*(r.slots||1)+sl+1)+'-'+(l+1)];
+      if(i===undefined||taken.has(i)||slotFull(i)!==full)continue;return{x:f.x,z:f.z,i}}return null};
+  const putTask=k=>{const sl=pickSlot(k,false);if(sl){a.res=sl.i;return G(sl.x,sl.z,1,'put',0,sl.i)}const[zx,zz]=zonePt(k);return G(zx,zz,1,'unload',.8)};
+  // con un pallet todavía en las uñas: primero lo ubica
+  if(a.carry){a.path=[putTask(rndClient())];return}
+  const r=Math.random();
+  if(r<.45){const ins=docks.filter(x=>(x.d.use==='in'||x.d.use==='both')&&(!CF||x.d.cl.some(inCF)));if(ins.length){const {d,i}=ins[Math.floor(Math.random()*ins.length)],dc=d.cl.filter(inCF),k=dc.length?dc[Math.floor(Math.random()*dc.length)]:rndClient(),dx=dockX(i);
+    // recepción: retira el pallet del muelle y lo pone en una posición vacía
+    a.path=[G(dx,dz,0,'load',.8),putTask(k)];return}}
+  const k=rndClient();
+  if(r<.75){const sl=pickSlot(k,true);if(sl){const[zx,zz]=zonePt(k);a.res=sl.i;
+    // baja un pallet de su posición y lo lleva a la zona de preparación del cliente
+    a.path=[G(sl.x,sl.z,0,'take',0,sl.i),G(zx,zz,1,'unload',.8)];return}}
+  const outs=docks.filter(x=>dockAllows(C,x.i,k,'out')),pick=outs.length?outs[Math.floor(Math.random()*outs.length)]:docks[docks.length-1],dx=dockX(pick.i),[zx,zz]=zonePt(k);
+  // despacho: lleva lo preparado de la zona del cliente al muelle
+  a.path=[G(zx,zz,0,'load',.8),G(dx,dz,1,'unload',.8)];
 }
 // distancias mínimas de seguridad (m) entre los puntos más cercanos de cada uno (uñas y contrapeso del autoelevador, persona y carro)
 const SAFE={opop:.75,fkop:1.8,fkfk:2.2};
@@ -1354,7 +1373,22 @@ const prioOf=a=>(a.kind==='op'?2:1)*100000-a.id; // las personas tienen priorida
 function setCart(a,on){const u=a.g.userData,c=u.cart;if(!c)return;a.g.rotation.y=0;
   if(on){if(a.cart){agentRoot.remove(a.cart);a.cart=null}a.g.add(c);c.position.set(0,0,0);c.rotation.set(0,0,0);a.hasCart=true;u.aL.rotation.x=u.aR.rotation.x=-1}
   else{a.g.remove(c);c.position.copy(a.g.position);c.rotation.set(0,0,0);agentRoot.add(c);a.cart=c;a.hasCart=false;u.aL.rotation.x=u.aR.rotation.x=0}}
-function arrive(a,g){if(!g)return;if(g.act==='drop')setCart(a,false);else if(g.act==='take')setCart(a,true);else if(g.act==='park')a.parked=true;else if(g.act==='wait')a.hold=g.t||0}
+function arrive(a,g){if(!g)return;
+  if(a.kind==='fk'){const u=a.g.userData;
+    if(g.act==='put'||g.act==='take'){const i=g.i,ok=i!==undefined&&slotFull(i)===(g.act==='take');if(ok){a.op={act:g.act,i,ph:'turn',h:0,H:Math.max(0,PY[i]),t:0};return}a.res=-1;a.hold=.3;return}
+    if(g.act==='load'){a.carry=true;u.load.visible=true;a.hold=g.t||0;return}
+    if(g.act==='unload'){a.carry=false;u.load.visible=false;a.hold=g.t||0;return}
+    if(g.act==='wait')a.hold=g.t||0;return}
+  if(g.act==='drop')setCart(a,false);else if(g.act==='take')setCart(a,true);else if(g.act==='park')a.parked=true;else if(g.act==='wait')a.hold=g.t||0}
+function runOp(a,dt){const o=a.op,u=a.g.userData,sp=1.1*(1+Math.min(2,Math.sqrt(speed)/2));
+  if(o.ph==='turn'){const ty=Math.atan2(PX[o.i]-a.g.position.x,PZ[o.i]-a.g.position.z);let dr=ty-a.g.rotation.y;dr=Math.atan2(Math.sin(dr),Math.cos(dr));const nr=Math.abs(dr)<.03?ty:a.g.rotation.y+dr*Math.min(1,dt*6),x=a.g.position.x,z=a.g.position.z;
+    // no gira si las uñas se acercarían a alguien que está cerca: espera a que pase
+    for(const b of agents){if(b===a||Math.hypot(b.g.position.x-x,b.g.position.z-z)>7)continue;const g1=gapOf(a,x,z,b,nr);if(g1<safeD(a,b)&&g1<gapOf(a,x,z,b)-1e-4)return}
+    a.g.rotation.y=nr;if(nr===ty)o.ph='up'}
+  else if(o.ph==='up'){o.h=Math.min(o.H,o.h+dt*sp);if(o.h>=o.H)o.ph='xfer'}
+  else if(o.ph==='xfer'){o.t+=dt;if(o.t>=.45&&!o.done){o.done=true;ovArr()[o.i]=o.act==='put'?1:0;a.carry=o.act==='take';u.load.visible=a.carry;dirty=true}if(o.t>=.9)o.ph='down'}
+  else if(o.ph==='down'){o.h=Math.max(0,o.h-dt*sp);if(o.h<=0){a.op=null;a.res=-1}}
+  u.lift.position.y=o.h;u.inner.position.y=Math.max(0,o.h-1.05)}
 // si quedan enfrentados, el de menor prioridad se corre a un lugar libre fuera del camino del otro
 function yieldFrom(a,b){
   const N=navGrid(),ok=N.ok[a.kind],need=safeD(a,b),bx=b.g.position.x,bz=b.g.position.z,d0=Math.hypot(a.g.position.x-bx,a.g.position.z-bz);
@@ -1373,6 +1407,7 @@ function yieldFrom(a,b){
 function moveAgents(dt){
   const v=dt*(1.6+Math.min(4.5,Math.sqrt(speed)));
   for(const a of agents){
+    if(a.op){runOp(a,dt);continue}
     if(a.hold>0){a.hold-=dt;if(a.hold>0)continue}
     if(!a.route.length){
       if(a.goal){const g=a.goal;a.goal=null;arrive(a,g);if(a.hold>0)continue}
@@ -1388,11 +1423,11 @@ function moveAgents(dt){
     if(blk){a.wait+=dt;const mutual=blk.wait>0&&blk.blk===a;
       if(!a.tried&&a.wait>(mutual?.8:1.5)&&(prioOf(a)<prioOf(blk)||a.wait>5)){a.tried=true;yieldFrom(a,blk)}
       // cruce trabado: el de menor prioridad deja esa tarea y toma otra (el que tiene prioridad espera un poco más)
-      if(a.wait>(prioOf(a)<prioOf(blk)?7:12)){const keep=a.goal&&(a.goal.act==='drop'||a.goal.act==='take'||a.goal.act==='park');a.path=keep?[a.goal]:[];a.route=[];a.goal=null;a.wait=0;a.tried=false;a.hold=.4}
+      if(a.wait>(prioOf(a)<prioOf(blk)?7:12)){const keep=a.goal&&(a.goal.act==='drop'||a.goal.act==='take'||a.goal.act==='park');a.path=keep?[a.goal]:[];a.route=[];a.goal=null;if(!keep)a.res=-1;a.wait=0;a.tried=false;a.hold=.4}
       a.blk=blk;
       const u=a.g.userData;if(a.kind==='op'){u.lL.rotation.x*=.8;u.lR.rotation.x*=.8}continue}
     a.wait=0;a.blk=null;a.moved=(a.moved||0)+s;if(a.moved>1.5){a.tried=false;a.moved=0}a.g.position.x=nx;a.g.position.z=nz;a.g.rotation.y=nr;
-    const u=a.g.userData;if(a.kind==='op'){u.ph+=s*3.4;u.lL.rotation.x=Math.sin(u.ph)*.55;u.lR.rotation.x=-Math.sin(u.ph)*.55;if(!a.hasCart){u.aL.rotation.x=-Math.sin(u.ph)*.45;u.aR.rotation.x=Math.sin(u.ph)*.45}}else u.load.visible=!!(a.goal&&a.goal.c)}
+    const u=a.g.userData;if(a.kind==='op'){u.ph+=s*3.4;u.lL.rotation.x=Math.sin(u.ph)*.55;u.lR.rotation.x=-Math.sin(u.ph)*.55;if(!a.hasCart){u.aL.rotation.x=-Math.sin(u.ph)*.45;u.aR.rotation.x=Math.sin(u.ph)*.45}}else u.load.visible=!!a.carry}
 }
 function moveTraffic(dt){
   if(!layers.traffic||!pubCurve)return;
@@ -1443,12 +1478,16 @@ function updateSky(simT){
   if(MAT.lamp){MAT.lamp.emissiveIntensity=.05+1.6*night;MAT.win.emissiveIntensity=1.1*night}
   const hud=$('#skyChip');if(hud){const txt=!layers.daynight?'':e>.35?' · Día':e>=0?(m<720?' · Amanecer':' · Atardecer'):e>-.18?' · Crepúsculo':' · Noche';if(hud.textContent!==txt)hud.textContent=txt}
 }
+// maniobras de los autoelevadores sobre las posiciones: 1 = pallet puesto, 0 = pallet bajado, -1 = según la simulación
+let OV=null;
+function ovArr(){const n=nPos(C);if(!OV||OV.S!==S||OV.a.length!==n){OV={S,a:new Int8Array(n).fill(-1)}}return OV.a}
+function slotFull(i){const o=ovArr()[i];if(o>=0)return o===1;const p=S.pos[i];return!!(p&&p.sku)}
 function updateScene(){
   if(!cartons){renderLegend();dirty=false;return}
-  const n=nPos(C),cov=colorMode==='cob'?coverage(S,C):null;let mC=false,mP=false;
-  for(let i=0;i<n;i++){const p=S.pos[i];if(!p)continue;const vis=!CF||CF.has(p.cl),has=p.sku&&vis?1:0;
+  const n=nPos(C),cov=colorMode==='cob'?coverage(S,C):null,OA=ovArr();let mC=false,mP=false;
+  for(let i=0;i<n;i++){const p=S.pos[i];if(!p)continue;const vis=!CF||CF.has(p.cl),ov=OA[i],has=(ov>=0?ov===1:!!p.sku)&&vis?1:0;
     if(has!==LASTP[i]){LASTP[i]=has;mP=true;if(has&&!PSM[i]){dummy.rotation.set(0,PO[i]==='v'?0:Math.PI/2,0);dummy.position.set(PX[i],PY[i],PZ[i]);dummy.scale.set(1,1,PW[i]);dummy.updateMatrix();palletsM.setMatrixAt(i,dummy.matrix)}else palletsM.setMatrixAt(i,ZM)}
-    const nb=!vis||!p.sku||p.qty<=0?0:Math.max(1,Math.round(p.qty/p.cap*BPP));
+    const nb=!vis?0:ov===1?Math.round(BPP*.75):ov===0||!p.sku||p.qty<=0?0:Math.max(1,Math.round(p.qty/p.cap*BPP));
     if(nb!==LASTN[i]){LASTN[i]=nb;mC=true;for(let k=0;k<BPP;k++){if(k<nb){const s=SLOT[k],v=PO[i]==='v',sm=PSM[i],w=PW[i],y=PY[i]+(sm?.13+s[1]*.19:.29+s[1]*.3);dummy.rotation.set(0,((i*7+k*13)%5-2)*.02,0);
           dummy.position.set(PX[i]+(v?s[0]:s[2]*w),y,PZ[i]+(v?s[2]*w:s[0]));const bx=sm?.4:.5,bz=(sm?.38:.46)*w,by=sm?.18:.29;dummy.scale.set(v?bx:bz,by,v?bz:bx);dummy.updateMatrix();cartons.setMatrixAt(i*BPP+k,dummy.matrix)}else cartons.setMatrixAt(i*BPP+k,ZM)}}
     if(colorMode!=='none')tags.setColorAt(i,vis?tagColor(p,cov):COL['--line2'])}
@@ -1522,7 +1561,8 @@ function followTarget(){
   if(follow==='fk'){const a=agents.find(a=>a.kind==='fk');return a?a.g.position:null}
   if(follow==='ship'){const it=vehItems().find(x=>x.id===selShip);return it?it.o.position:null}return null}
 function setView(v,instant){
-  if(!camera)return;follow=null;const sel=$('#viewSel');if(sel)sel.value=['truck','op','fk'].includes(v)?v:'free';
+  if(!camera)return;follow=null;camTour=null;aisleBadge(null);const sel=$('#viewSel');if(sel)sel.value=['truck','op','fk','aisles'].includes(v)?v:'free';
+  if(v==='aisles'){startTour();return}
   if(v==='truck'||v==='op'||v==='fk'){follow=v;const p=followTarget();if(!p){follow=null;toast(v==='truck'?'No hay camiones en ruta en este momento. Acelerá la simulación y probá de nuevo.':'No hay personal en este turno.');if(sel)sel.value='free';return}
     setZonePressed(null);const o=v==='truck'?new THREE.Vector3(16,11,16):new THREE.Vector3(4.5,3.2,5.5);flyTo(p.clone().add(o),p.clone().add(new THREE.Vector3(0,1,0)),650);return}
   setZonePressed(v);const[p,t]=viewPose(v);if(instant){camera.position.copy(p);controls.target.copy(t);controls.update()}else flyTo(p,t);
@@ -1533,9 +1573,19 @@ function onDbl(e){
   const pt=new THREE.Vector3();if(!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0,1,0),0),pt))return;
   flyToPoint(pt,Math.max(controls.minDistance*2,camera.position.distanceTo(controls.target)*.45));
 }
+let camTour=null;
+function aisleBadge(t){let b=$('#aisleBadge');if(!b){b=document.createElement('div');b.id='aisleBadge';b.style.cssText='position:absolute;left:50%;top:66px;transform:translateX(-50%);z-index:6;padding:8px 18px;border-radius:999px;background:rgba(19,28,38,.86);color:#fff;font:700 15px/1.2 "Plus Jakarta Sans",system-ui,sans-serif;letter-spacing:.02em;pointer-events:none;white-space:nowrap';$('#view').appendChild(b)}b.hidden=!t;if(t)b.textContent=t}
+function startTour(){const L=AISLES.filter(q=>q.a1-q.a0>4);if(!L.length){toast('No hay pasillos para recorrer en este depósito.');const s=$('#viewSel');if(s)s.value='free';return}
+  follow=null;setZonePressed(null);camTour={L,i:-1};nextAisle();toast('Recorrido por pasillos: tocá la escena o elegí otra vista para terminarlo.')}
+function aislePose(q,dir,u){const s0=dir>0?q.a0-1.4:q.a1+1.4,e0=dir>0?q.a1+1.4:q.a0-1.4,a=s0+(e0-s0)*u,lk=a+dir*7,V=(x,y,z)=>new THREE.Vector3(x,y,z);
+  return q.o==='v'?[V(q.c,1.75,a),V(q.c,1.4,lk)]:[V(a,1.75,q.c),V(lk,1.4,q.c)]}
+function nextAisle(){const T=camTour;if(!T)return;T.i=(T.i+1)%T.L.length;const q=T.L[T.i];T.q=q;T.dir=T.i%2?-1:1;T.glide=false;
+  T.label=`PASILLO ${q.n} · SECTOR ${q.sec}`;aisleBadge(T.label);const[p,t]=aislePose(q,T.dir,0);flyTo(p,t,1500)}
 function stepCamera(now){
   if(fly){const k=Math.min(1,(now-fly.s)/fly.d),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;camera.position.lerpVectors(fly.p0,fly.p1,e);controls.target.lerpVectors(fly.t0,fly.t1,e);if(k>=1)fly=null}
   else if(follow){const p=followTarget();if(!p){follow=null}else{const d=p.clone().add(new THREE.Vector3(0,1,0)).sub(controls.target).multiplyScalar(.12);controls.target.add(d);camera.position.add(d)}}
+  else if(camTour){const T=camTour;if(!T.glide){T.glide=true;T.s=now;T.d=Math.max(5000,(T.q.a1-T.q.a0+2.8)/2.3*1000)}
+    const u=Math.min(1,(now-T.s)/T.d),[p,t]=aislePose(T.q,T.dir,u);camera.position.copy(p);controls.target.copy(t);if(u>=1)nextAisle()}
 }
 function renderLegend(){
   const map={stock:[['--ok','≥ 50%'],['--warn','25–50%'],['--crit','< 25%']],abc:[['--accent','A'],['--info','B'],['--muted','C']],cob:[['--ok','> 6 h'],['--warn','2–6 h'],['--crit','< 2 h']]};
@@ -2536,6 +2586,7 @@ function recFrame(){
   const bw=250*k,bx=W-bw-16*k;box(bx,16*k,bw,(30+rows.length*22+14+CL.length*18)*k);x.font=F(800,13);x.fillStyle='#131c26';x.fillText('Indicadores',bx+14*k,34*k);
   rows.forEach(([l,val],i)=>{const y=(56+i*22)*k;x.font=F(500,12);x.fillStyle='#66737f';x.textAlign='left';x.fillText(l,bx+14*k,y);x.font=F(700,13);x.fillStyle='#131c26';x.textAlign='right';x.fillText(val,bx+bw-14*k,y);x.textAlign='left'});
   CL.forEach((c,i)=>{const y=(56+rows.length*22+12+i*18)*k,n=T[c.id].cur+T[c.id].staged;x.fillStyle=cliHex(c.id);x.fillRect(bx+14*k,y-5*k,10*k,10*k);x.font=F(600,12);x.fillStyle='#131c26';x.fillText(c.n,bx+30*k,y);x.textAlign='right';x.fillStyle='#66737f';x.fillText(n+' en curso',bx+bw-14*k,y);x.textAlign='left'});
+  if(camTour&&camTour.label){x.font=F(800,15);const lb=camTour.label,tw=x.measureText(lb).width+40*k;x.save();x.fillStyle='rgba(19,28,38,.86)';rr(x,W/2-tw/2,16*k,tw,36*k,18*k);x.fill();x.restore();x.fillStyle='#ffffff';x.textAlign='center';x.fillText(lb,W/2,34*k);x.textAlign='left'}
   // barra del día
   const bx2=16*k,by=H-30*k,bw2=W-32*k,f=Math.min(1,mday(S.t)/1440);box(bx2,by-12*k,bw2,26*k);x.fillStyle='#e6eefc';rr(x,bx2+10*k,by-2*k,bw2-20*k,6*k,3*k);x.fill();x.fillStyle='#1f5fd6';rr(x,bx2+10*k,by-2*k,(bw2-20*k)*f,6*k,3*k);x.fill();
   x.font=F(600,10);x.fillStyle='#66737f';x.fillText('Gemelo Digital CD · simulación',bx2+12*k,by-6*k+0);
@@ -2670,7 +2721,7 @@ init3D();updateUI(true);requestAnimationFrame(loop);
 $('#zIn').addEventListener('click',()=>zoomBy(.7));$('#zOut').addEventListener('click',()=>zoomBy(1.4));$('#zHome').addEventListener('click',()=>setView('general'));
 $('#lblBtn').addEventListener('click',()=>{layers.labels=!layers.labels;applyLayers();if(tab==='config')renderConfig()});
 $('#zFull').addEventListener('click',()=>{const el=$('#view');const p=document.fullscreenElement?document.exitFullscreen():el.requestFullscreen?el.requestFullscreen():null;if(!p)toast('La pantalla completa no está disponible en esta vista.');else p.catch(()=>toast('La pantalla completa no está disponible en esta vista.'))});
-$('#viewSel').addEventListener('change',e=>{const v=e.target.value;if(v==='free'){follow=null;return}setView(v)});
+$('#viewSel').addEventListener('change',e=>{const v=e.target.value;if(v==='free'){follow=null;camTour=null;aisleBadge(null);return}setView(v)});
 document.addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;if(e.key==='+'||e.key==='=')zoomBy(.75);else if(e.key==='-'||e.key==='_')zoomBy(1.33)});
 })();
 </script>

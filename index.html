@@ -584,6 +584,7 @@ const CROQUIS={
   docks:[[3,3,31],[5,5,31],[32,32,29],[34,34,29],[36,36,29],[38,38,29],[43,44,44],[47,48,44]],
   walls:[[31,2,31,13]],pdoors:[11,31],mainRow:25
 };
+const CART_PARK=[14,26,28,26]; // franja junto al pasillo principal, frente a vestuarios y comedor
 let GEOMK=null,GEOM=null;
 function geom(c){
   const key=(c.layout||'croquis')+'|'+c.rows+'x'+c.bays+'|'+c.levels+'|'+c.docks+'|'+c.clients.map(k=>k.id+k.share).join(',');if(GEOMK===key)return GEOM;
@@ -872,16 +873,18 @@ function jacket(y,z){return[B(UNI.red,[0,1.1+y,z],[.44,.3,.27]),B(UNI.yel,[0,1.3
   B(UNI.blk,[-.215,1.1+y,z],[.025,.3,.275]),B(UNI.blk,[.215,1.1+y,z],[.025,.3,.275]),B(UNI.red,[0,1.5+y,z],[.24,.05,.2]),B(UNI.blk,[0,1.2+y,z+.137],[.02,.5,.01])]}
 function makeOperator(){
   const skin=[0xe2b48c,0xc68e64,0x8d5a3b][Math.floor(Math.random()*3)],g=new THREE.Group();
-  const body=new THREE.Mesh(merge([...jacket(0,0),part(G.sphere,skin,[0,1.62,0],null,[.12,.14,.12]),part(G.sphere,0xf5f5f5,[0,1.7,0],null,[.14,.08,.15]),B(0xf5f5f5,[0,1.665,.1],[.2,.02,.08]),B(UNI.blk,[0,.93,0],[.38,.12,.22]),
-    B(0x9aa3ab,[0,.95,.72],[.6,.04,.04]),B(0x9aa3ab,[-.28,.55,.92],[.04,.9,.04]),B(0x9aa3ab,[.28,.55,.92],[.04,.9,.04]),B(0x9aa3ab,[0,.22,1.15],[.62,.04,.75]),B(0x9aa3ab,[0,.62,1.15],[.62,.03,.75]),
+  const body=new THREE.Mesh(merge([...jacket(0,0),part(G.sphere,skin,[0,1.62,0],null,[.12,.14,.12]),part(G.sphere,0xf5f5f5,[0,1.7,0],null,[.14,.08,.15]),B(0xf5f5f5,[0,1.665,.1],[.2,.02,.08]),B(UNI.blk,[0,.93,0],[.38,.12,.22])]),MAT.vc);
+  body.castShadow=true;g.add(body);
+  // el carro es una pieza aparte: el operario lo deja en el estacionamiento de carros para ir al baño o al comedor
+  const cart=new THREE.Group(),cm=new THREE.Mesh(merge([B(0x9aa3ab,[0,.95,.72],[.6,.04,.04]),B(0x9aa3ab,[-.28,.55,.92],[.04,.9,.04]),B(0x9aa3ab,[.28,.55,.92],[.04,.9,.04]),B(0x9aa3ab,[0,.22,1.15],[.62,.04,.75]),B(0x9aa3ab,[0,.62,1.15],[.62,.03,.75]),
     B(0xc49a62,[-.14,.39,1.02],[.27,.3,.3]),B(0xb88d55,[.14,.39,1.22],[.27,.3,.34]),B(0xc9a46e,[0,.78,1.1],[.34,.26,.3]),
     W(-.26,.06,.85,.06,.04),W(.26,.06,.85,.06,.04),W(-.26,.06,1.45,.06,.04),W(.26,.06,1.45,.06,.04)]),MAT.vc);
-  body.castShadow=true;g.add(body);
+  cm.castShadow=true;cart.add(cm);g.add(cart);
   const limb=(x,y,parts)=>{const p=new THREE.Group();p.position.set(x,y,0);const m=new THREE.Mesh(merge(parts),MAT.vc);m.castShadow=true;p.add(m);g.add(p);return p};
   const leg=[B(UNI.blk,[0,-.42,0],[.15,.84,.18]),B(0x0c0c0c,[0,-.86,.05],[.16,.09,.27])],arm=[B(UNI.yel,[0,-.13,0],[.125,.27,.135]),B(UNI.refl,[0,-.28,0],[.13,.035,.14]),B(UNI.blk,[0,-.43,0],[.11,.27,.12]),part(G.sphere,skin,[0,-.57,0],null,[.06,.06,.06])];
   const lL=limb(-.1,.9,leg),lR=limb(.1,.9,leg),aL=limb(-.27,1.43,arm),aR=limb(.27,1.43,arm);aL.rotation.x=aR.rotation.x=-1;
   const bd=new THREE.Sprite(badgeMat('lunch'));bd.scale.set(1.7,.53,1);bd.position.set(0,2.3,0);bd.visible=false;g.add(bd);
-  g.userData={lL,lR,ph:0,bd};return g;
+  g.userData={lL,lR,aL,aR,ph:0,bd,cart};return g;
 }
 const BADGE={};
 function badgeMat(k){if(BADGE[k])return BADGE[k];const cv=document.createElement('canvas'),x=cv.getContext('2d');cv.width=256;cv.height=80;
@@ -889,7 +892,7 @@ function badgeMat(k){if(BADGE[k])return BADGE[k];const cv=document.createElement
   x.fillText(k==='lunch'?'ALMUERZO':'BAÑO',128,42);const t=new THREE.CanvasTexture(cv);return BADGE[k]=new THREE.SpriteMaterial({map:t,depthWrite:false})}
 function assignBreaks(){
   const ops=agents.filter(a=>a.kind==='op'),n=ops.length;if(!n)return;const R=opsAt(S.t)||1,L=lunchInfo(S.t),nl=L?Math.min(n,Math.round(L.n*n/R)):0,start=L?Math.round(L.from*n/R):0,nw=Math.min(n-nl,Math.round(Math.min((S.wc||[]).length,R)*n/R));
-  ops.forEach((a,k)=>{const r=((k-start)%n+n)%n,st=r<nl?'lunch':r<nl+nw?'wc':'work';if(a.state!==st){a.state=st;a.path=[];a.parked=false;const bd=a.g.userData.bd;if(bd){bd.visible=st!=='work';if(st!=='work')bd.material=badgeMat(st)}}});
+  ops.forEach((a,k)=>{const r=((k-start)%n+n)%n,st=r<nl?'lunch':r<nl+nw?'wc':'work';if(a.state!==st){a.state=st;a.path=[];a.route=[];a.goal=null;a.hold=0;a.parked=false;const bd=a.g.userData.bd;if(bd){bd.visible=st!=='work';if(st!=='work')bd.material=badgeMat(st)}}});
 }
 function makeForklift(){
   const g=new THREE.Group(),P=[B(0xf2a900,[0,.72,0],[1.1,.75,1.9],'paint'),B(0x2b2e31,[0,.78,-1.05],[1.1,.85,.45]),B(0x2b2e31,[0,1.12,-.2],[.5,.08,.5]),
@@ -945,7 +948,7 @@ function disposeTree(o){o.traverse(n=>{if(n.geometry&&!Object.values(G).includes
 function buildLayout(){
   if(!scene)return;
   if(root){scene.remove(root);disposeTree(root)}
-  root=new THREE.Group();scene.add(root);CLZ=[];agents=[];docks3=[];yard3=[];route3=[];parkCars=[];traffic=[];labelsG=new THREE.Group();root.add(labelsG);
+  root=new THREE.Group();scene.add(root);CLZ=[];agents=[];NAV=null;docks3=[];yard3=[];route3=[];parkCars=[];traffic=[];labelsG=new THREE.Group();root.add(labelsG);
   const D=dims(),n=nPos(C),fw=D.halfW*2,fl=D.zWall+4,ni=nIn(C),ZR=zoneRects();
   const add=(m,sh=true,rc=true)=>{m.castShadow=sh;m.receiveShadow=rc;root.add(m);return m};
   const plane=(w,l,mat,x,y,z)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,l),mat);m.rotation.x=-Math.PI/2;m.position.set(x,y,z);m.receiveShadow=true;root.add(m);return m};
@@ -1185,6 +1188,7 @@ function buildCroquisInterior(D,add,plane,box){
     if(W(r)>Lz(r)){ln(cx(r),r.z0+.1,W(r),.12,0xf2c200);ln(cx(r),r.z1-.1,W(r),.12,0xf2c200)}else{ln(r.x0+.1,cz(r),.12,Lz(r),0xf2c200);ln(r.x1-.1,cz(r),.12,Lz(r),0xf2c200)}
     if(Math.max(W(r),Lz(r))>14)root.add(floorText('SENDA PEATONAL',cx(r),cz(r),Math.min(9,Math.max(W(r),Lz(r))*.5),W(r)>Lz(r)?0:Math.PI/2,'rgba(30,90,40,.5)'))}
   root.add(floorText('PASILLO PRINCIPAL',gxc(16),GEOM.mainZ,12,0,'rgba(25,40,58,.45)'));
+  {const[c0,r0,c1,r1]=CART_PARK,r=R(c0,r0,c1,r1);rect(r,0xe3e8ef,.014,.06);outline(r,0x5b6b7c,.08);root.add(floorText('ESTACIONAMIENTO DE CARROS',cx(r),cz(r),Math.min(W(r)-2,13),0,'rgba(40,55,75,.5)'))}
   const ni=nIn(C);
   CROQUIS.docks.forEach(([c0,c1,r0],i)=>{const r=R(c0,r0,c1,50),d=C.dockCfg[i]||{use:'off',cl:[]},uc=DOCK_COL[d.use];rect(r,uc[0],.011,.05);outline(r,uc[1],.14);
     root.add(floorText('MUELLE '+(i+1)+' · '+USE_LBL[d.use].toUpperCase()+(d.cl.length&&d.use!=='off'?' · '+d.cl.map(cliName).join(' / ').toUpperCase():''),cx(r),cz(r)+1,Math.min(Lz(r)-2,14),Math.PI/2,uc[2]))});
@@ -1238,41 +1242,157 @@ function applyLayers(){
 function syncAgents(){
   if(!agentRoot)return;const D=dims(),sf=cfShare(),want={op:CF?Math.min(opsAt(S.t),Math.max(opsAt(S.t)?1:0,Math.round(opsAt(S.t)*sf))):opsAt(S.t),fk:CF?Math.min(C.forklifts,Math.max(1,Math.round(C.forklifts*sf))):C.forklifts};
   for(const kind of['op','fk']){const cur=agents.filter(a=>a.kind===kind);
-    while(cur.length<want[kind]){const g=kind==='op'?makeOperator():makeForklift();g.position.set((Math.random()-.5)*D.halfW*1.2,0,D.mainZ);agentRoot.add(g);const a={g,kind,path:[]};agents.push(a);cur.push(a)}
-    while(cur.length>want[kind]){const a=cur.pop();agentRoot.remove(a.g);agents.splice(agents.indexOf(a),1)}}
+    while(cur.length<want[kind]){const g=kind==='op'?makeOperator():makeForklift();const N=navGrid(),sp=navNearest(N,kind,(Math.random()-.5)*D.halfW*1.2,D.mainZ,agents);g.position.set(sp.x,0,sp.z);agentRoot.add(g);
+      const a={g,kind,id:++AGENT_SEQ,path:[],route:[],goal:null,wait:0,hold:0,hasCart:kind==='op',slot:-1};if(kind==='op'){g.userData.aL.rotation.x=g.userData.aR.rotation.x=-1}agents.push(a);cur.push(a)}
+    while(cur.length>want[kind]){const a=cur.pop();agentRoot.remove(a.g);if(a.cart)agentRoot.remove(a.cart);agents.splice(agents.indexOf(a),1)}}
 }
-function rackAccess(GM,r,j){
-  const P=(x,z)=>({x,z}),M=GM.mainZ,a=r.cells[j];
-  if(GM.mode!=='croquis'){const fx=r.line+(Math.random()<.5?-2.3:2.3);return{go:[P(fx,M),P(fx,a)],back:[P(fx,M)]}}
-  const face=-(r.side||1);
-  if(r.o==='v'){const fx=r.line+face*1.3;if(r.sector==='B'){const hx=gxc(42),hz=gz0(13);return{go:[P(hx,M),P(hx,hz),P(fx,hz),P(fx,a)],back:[P(fx,hz),P(hx,hz),P(hx,M)]}}
-    return{go:[P(fx,M),P(fx,a)],back:[P(fx,M)]}}
-  const fz=r.line+face*1.15,ex=r.sector==='C'?gx0(46)-.6:gx0(41)+.6;return{go:[P(ex,M),P(ex,fz),P(a,fz)],back:[P(ex,fz),P(ex,M)]};
+let AGENT_SEQ=0,NAV=null;
+// ---- grilla de circulación: racks, salas con su puerta, mesas y paredes son obstáculos ----
+const NAV_RES=.3,NAV_CLR={op:.28,fk:.72},NAV_PREF={op:.9,fk:1.6};
+function navGrid(){
+  const GM=geom(C),D=dims(),key=GEOMK+'|'+D.halfW+'|'+D.zWall;if(NAV&&NAV.key===key)return NAV;
+  const res=NAV_RES,M=.6,x0=-D.halfW-M,z0=D.zBack-M,W=Math.ceil((2*D.halfW+2*M)/res),H=Math.ceil((D.zWall-D.zBack+2*M)/res),n=W*H;
+  const solid=new Uint8Array(n),fkNo=new Uint8Array(n);
+  const ci=x=>Math.floor((x-x0)/res),cj=z=>Math.floor((z-z0)/res);
+  const fill=(arr,ax,bx,az,bz)=>{const i0=Math.max(0,ci(Math.min(ax,bx))),i1=Math.min(W-1,ci(Math.max(ax,bx))),j0=Math.max(0,cj(Math.min(az,bz))),j1=Math.min(H-1,cj(Math.max(az,bz)));for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++)arr[j*W+i]=1};
+  for(let j=0;j<H;j++)for(let i=0;i<W;i++){const x=x0+(i+.5)*res,z=z0+(j+.5)*res;if(x<-D.halfW||x>D.halfW||z<D.zBack||z>D.zWall)solid[j*W+i]=1}
+  for(const r of GM.racks){const half=r.cellLen/2,a0=r.cells[0]-half,a1=r.cells[r.cells.length-1]+half,e=r.kind==='rack'?.4:.05;
+    if(r.o==='v')fill(solid,r.line-.64,r.line+.64,a0-e,a1+e);else fill(solid,a0-e,a1+e,r.line-.64,r.line+.64)}
+  if(GM.mode==='croquis'){
+    const R=(c0,r0,c1,r1)=>({x0:gx0(c0),x1:gx0(c1+1),z0:gz0(r0),z1:gz0(r1+1)});
+    for(const[c0,r0,c1,r1]of CROQUIS.walls){const r=R(c0,r0,c1,r1),cx=(r.x0+r.x1)/2;fill(solid,cx-.17,cx+.17,r.z0,r.z1)}
+    for(const[name,c0,r0,c1,r1,kind]of CROQUIS.rooms){const r=R(c0,r0,c1,r1),front=Math.abs(r.z1-D.zWall)<.5,dz=front?r.z0:r.z1,gap=1.3,m=(r.x0+r.x1)/2;
+      fill(fkNo,r.x0,r.x1,r.z0,r.z1);
+      for(const z of[r.z0,r.z1]){if(Math.abs(z-D.zWall)<.5)continue;if(kind!=='cage'&&Math.abs(z-dz)<.01){fill(solid,r.x0,m-gap/2,z-.06,z+.06);fill(solid,m+gap/2,r.x1,z-.06,z+.06)}else fill(solid,r.x0,r.x1,z-.06,z+.06)}
+      for(const x of[r.x0,r.x1])fill(solid,x-.06,x+.06,r.z0,Math.min(r.z1,D.zWall))}
+    for(const[t,c0,r0,c1,r1]of CROQUIS.tables){const r=R(c0,r0,c1,r1),cx=(r.x0+r.x1)/2;for(let z=r.z0+1;z<r.z1-.6;z+=1.6)fill(solid,cx-.95,cx+.95,z-.45,z+.45)}
+    {const r=R(...CART_PARK);fill(fkNo,r.x0-.5,r.x1+.5,r.z0-.2,r.z1+.3)}
+  }
+  // distancia (m) al obstáculo más cercano: chamfer 3-4
+  const dist=new Float32Array(n);for(let k=0;k<n;k++)dist[k]=solid[k]?0:1e9;const a=res,b=res*1.4142;
+  for(let j=0;j<H;j++)for(let i=0;i<W;i++){const k=j*W+i;let d=dist[k];if(!d)continue;if(i>0)d=Math.min(d,dist[k-1]+a);if(j>0){d=Math.min(d,dist[k-W]+a);if(i>0)d=Math.min(d,dist[k-W-1]+b);if(i<W-1)d=Math.min(d,dist[k-W+1]+b)}dist[k]=d}
+  for(let j=H-1;j>=0;j--)for(let i=W-1;i>=0;i--){const k=j*W+i;let d=dist[k];if(!d)continue;if(i<W-1)d=Math.min(d,dist[k+1]+a);if(j<H-1){d=Math.min(d,dist[k+W]+a);if(i<W-1)d=Math.min(d,dist[k+W+1]+b);if(i>0)d=Math.min(d,dist[k+W-1]+b)}dist[k]=d}
+  const ok={op:new Uint8Array(n),fk:new Uint8Array(n)};for(let k=0;k<n;k++){ok.op[k]=dist[k]>=NAV_CLR.op?1:0;ok.fk[k]=dist[k]>=NAV_CLR.fk&&!fkNo[k]?1:0}
+  NAV={key,res,x0,z0,W,H,n,dist,ok,ci,cj,cx:i=>x0+(i+.5)*res,cz:j=>z0+(j+.5)*res};
+  // zona conectada al pasillo principal (por tipo) y posiciones de rack a las que realmente se llega
+  NAV.comp={};for(const kind of['op','fk']){const c=new Uint8Array(n),sp=navNearest(NAV,kind,0,D.mainZ),s0=cj(sp.z)*W+ci(sp.x),q=[s0];c[s0]=1;
+    for(let h=0;h<q.length;h++){const k=q[h],i=k%W,j=(k-i)/W;for(const[di,dj]of[[1,0],[-1,0],[0,1],[0,-1]]){const ii=i+di,jj=j+dj;if(ii<0||jj<0||ii>=W||jj>=H)continue;const kk=jj*W+ii;if(!c[kk]&&ok[kind][kk]){c[kk]=1;q.push(kk)}}}NAV.comp[kind]=c}
+  NAV.reach=(kind,x,z)=>{const i=ci(x),j=cj(z);return i>=0&&j>=0&&i<W&&j<H&&!!NAV.comp[kind][j*W+i]};
+  NAV.cand={op:{},fk:{}};for(const r of GM.racks)for(let j=0;j<r.cells.length;j++){for(const kind of['op','fk']){if(kind==='fk'&&r.kind!=='rack')continue;const f=rackFace(GM,r,j,kind);if(NAV.reach(kind,f.x,f.z))(NAV.cand[kind][r.cl]=NAV.cand[kind][r.cl]||[]).push(f)}}
+  return NAV;
 }
+// celda libre más cercana (y lejos de otros agentes si se pasa la lista)
+function navNearest(N,kind,x,z,others){const ok=N.ok[kind],i0=Math.min(N.W-1,Math.max(0,N.ci(x))),j0=Math.min(N.H-1,Math.max(0,N.cj(z)));
+  const seen=new Uint8Array(N.n),q=[j0*N.W+i0];seen[q[0]]=1;
+  for(let h=0;h<q.length&&h<40000;h++){const k=q[h],i=k%N.W,j=(k-i)/N.W,px=N.cx(i),pz=N.cz(j);
+    if(ok[k]&&(!others||others.every(o=>Math.hypot(o.g.position.x-px,o.g.position.z-pz)>2.5)))return{x:px,z:pz};
+    for(const[di,dj]of[[1,0],[-1,0],[0,1],[0,-1]]){const ii=i+di,jj=j+dj;if(ii<0||jj<0||ii>=N.W||jj>=N.H)continue;const kk=jj*N.W+ii;if(!seen[kk]){seen[kk]=1;q.push(kk)}}}
+  return{x,z}}
+// A* con preferencia por el centro de los pasillos; si la meta no es alcanzable llega al punto libre más cercano
+function navPath(kind,sx,sz,gx,gz){
+  const N=navGrid(),ok=N.ok[kind],W=N.W,pref=NAV_PREF[kind],clamp=(v,m)=>Math.min(m-1,Math.max(0,v));
+  let s=clamp(N.cj(sz),N.H)*W+clamp(N.ci(sx),W);const g=clamp(N.cj(gz),N.H)*W+clamp(N.ci(gx),W);
+  let snap=null;if(!ok[s]){snap=navNearest(N,kind,sx,sz);s=clamp(N.cj(snap.z),N.H)*W+clamp(N.ci(snap.x),W)}
+  const gi=g%W,gj=(g-gi)/W,hh=k=>{const i=k%W,j=(k-i)/W,dx=Math.abs(i-gi),dz=Math.abs(j-gj);return(Math.max(dx,dz)+.4142*Math.min(dx,dz))};
+  const G=new Float32Array(N.n).fill(Infinity),from=new Int32Array(N.n).fill(-1),closed=new Uint8Array(N.n);
+  const hp=[],push=(f,k)=>{hp.push([f,k]);let c=hp.length-1;while(c>0){const p=(c-1)>>1;if(hp[p][0]<=hp[c][0])break;[hp[p],hp[c]]=[hp[c],hp[p]];c=p}},
+    pop=()=>{const top=hp[0],last=hp.pop();if(hp.length){hp[0]=last;let c=0;for(;;){const l=c*2+1,r=l+1;let m=c;if(l<hp.length&&hp[l][0]<hp[m][0])m=l;if(r<hp.length&&hp[r][0]<hp[m][0])m=r;if(m===c)break;[hp[m],hp[c]]=[hp[c],hp[m]];c=m}}return top};
+  G[s]=0;push(hh(s),s);let best=s,bestH=hh(s);
+  while(hp.length){const[,k]=pop();if(closed[k])continue;closed[k]=1;const h=hh(k);if(h<bestH){bestH=h;best=k}if(k===g)break;
+    const i=k%W,j=(k-i)/W;
+    for(const[di,dj,c]of[[1,0,1],[-1,0,1],[0,1,1],[0,-1,1],[1,1,1.4142],[1,-1,1.4142],[-1,1,1.4142],[-1,-1,1.4142]]){const ii=i+di,jj=j+dj;if(ii<0||jj<0||ii>=W||jj>=N.H)continue;const kk=jj*W+ii;
+      if(!ok[kk]||closed[kk])continue;if(di&&dj&&(!ok[j*W+ii]||!ok[jj*W+i]))continue;
+      const pen=1+2.5*Math.max(0,(pref-N.dist[kk])/pref),ng=G[k]+c*pen;if(ng<G[kk]){G[kk]=ng;from[kk]=k;push(ng+hh(kk),kk)}}}
+  const end=closed[g]?g:best,cells=[];for(let k=end;k!==-1;k=from[k])cells.push(k);cells.reverse();
+  // suavizado: se quitan puntos intermedios mientras la recta quede dentro de la zona libre
+  // atajo válido sólo si toda la recta conserva un margen extra respecto de racks, paredes y puertas
+  const clr=NAV_CLR[kind]+.22,fine=k=>ok[k]&&N.dist[k]>=clr;
+  const los=(a,b)=>{const ai=a%W,aj=(a-ai)/W,bi=b%W,bj=(b-bi)/W,L=Math.hypot(bi-ai,bj-aj),n=Math.max(1,Math.ceil(L*3));
+    for(let t=1;t<n;t++){const i=Math.round(ai+(bi-ai)*t/n),j=Math.round(aj+(bj-aj)*t/n);if(!fine(j*W+i))return false}return true};
+  const out=[];let a=0;while(a<cells.length-1){let b=cells.length-1;while(b>a+1&&!los(cells[a],cells[b]))b--;out.push(cells[b]);a=b}
+  const pts=out.map(k=>{const i=k%W;return{x:N.cx(i),z:N.cz((k-i)/W)}});
+  if(end===g&&pts.length)pts[pts.length-1]={x:gx,z:gz};
+  if(snap)pts.unshift(snap);
+  return pts;
+}
+// punto de trabajo frente a la posición del rack (del lado del pasillo)
+function rackFace(GM,r,j,kind){const a=r.cells[j];if(GM.mode!=='croquis'){const fx=r.line+(Math.random()<.5?-2.3:2.3);return{x:fx,z:a}}
+  const face=-(r.side||1),off=kind==='fk'?1.5:1.3;return r.o==='v'?{x:r.line+face*off,z:a}:{x:a,z:r.line+face*1.15}}
+// lugar de cada carro en el estacionamiento: el operario se para en el pasillo y el carro queda dentro de la franja
+function cartStand(k){const GM=geom(C),D=dims();
+  if(GM.mode==='croquis'){const x0=gx0(CART_PARK[0])+.7,x1=gx0(CART_PARK[2]+1)-.7,n=Math.max(1,Math.floor((x1-x0)/1.05)+1);return{x:x0+(k%n)*1.05,z:gz0(CART_PARK[1])-.78}}
+  return{x:-D.halfW+1.5+k*1.05,z:D.zBack+.5}}
+function freeSlot(a){if(a.slot>=0)return a.slot;const used=new Set(agents.filter(o=>o!==a&&o.slot>=0).map(o=>o.slot));let k=0;while(used.has(k))k++;return a.slot=k}
 function rndClient(){const sh=cliShares(C);let tot=0;const w=C.clients.map((k,i)=>{const v=inCF(k.id)?sh[i]:0;tot+=v;return v});if(!(tot>0)){const ids=cfIds();return ids[Math.floor(Math.random()*ids.length)]}let r=Math.random()*tot,i=0;for(;i<w.length-1;i++){if(w[i]>0&&r<w[i])break;r-=w[i]}return inCF(C.clients[i].id)?C.clients[i].id:cfIds()[0]}
 function breakRoom(kind){const GM=geom(C),D=dims();
   if(GM.mode==='croquis'){const pick=kind==='lunch'?['Comedor']:['Vestuario masculino','Vestuario femenino'],rs=CROQUIS.rooms.filter(r=>pick.includes(r[0]));const r=rs[Math.floor(Math.random()*rs.length)];
     if(r){const x0=gx0(r[1])+.8,x1=gx0(r[3]+1)-.8,z0=gz0(r[2])+.8,z1=gz0(r[4]+1)-.8;return[x0+Math.random()*(x1-x0),z0+Math.random()*(z1-z0)]}}
   return[(kind==='lunch'?-1:1)*D.halfW*.7+(Math.random()-.5)*4,D.zBack+2+Math.random()*3]}
 function newPath(a){
-  const GM=geom(C),D=dims(),M=GM.mainZ,P=(x,z,c)=>({x,z,c}),here=P(a.g.position.x,M,0),tag=(list,c)=>list.map(q=>P(q.x,q.z,c));
-  if(a.kind==='op'&&a.state&&a.state!=='work'){const[x,z]=breakRoom(a.state);a.path=GM.mode==='croquis'?[here,P(x,M,0),P(x,z,0)]:[P(x,z,0)];a.parked=true;return}
-  a.parked=false;
-  const rackOf=k=>{let rs=GM.racks.filter(r=>r.cl===k&&(r.kind==='rack'||a.kind==='op'));if(!rs.length)rs=GM.racks.filter(r=>r.kind==='rack');const r=rs[Math.floor(Math.random()*rs.length)];return rackAccess(GM,r,Math.floor(Math.random()*r.cells.length))};
+  const GM=geom(C),D=dims(),G=(x,z,c,act,t)=>({x,z,c:c||0,act,t});
   const zonePt=k=>{const z=clientZone(k);return[z.x0+.4+Math.random()*Math.max(.2,z.x1-z.x0-.8),z.z0+.4+Math.random()*Math.max(.2,z.z1-z.z0-.8)]};
-  if(a.kind==='op'){const k=rndClient(),acc=rackOf(k),[zx,zz]=zonePt(k);a.path=GM.mode==='croquis'?[here,...tag(acc.go,0),...tag(acc.back,0),P(zx,M,0),P(zx,zz,0)]:[...tag(acc.go,0),...tag(acc.back,0),P(zx,zz,0)];return}
+  const N=navGrid(),rackOf=k=>{const L=N.cand[a.kind][k];if(L&&L.length)return L[Math.floor(Math.random()*L.length)];
+    if(a.kind==='fk'){const[zx,zz]=zonePt(k);return{x:zx,z:zz}}
+    let rs=GM.racks.filter(r=>r.cl===k&&(r.kind==='rack'||a.kind==='op'));if(!rs.length)rs=GM.racks.filter(r=>r.kind==='rack');const r=rs[Math.floor(Math.random()*rs.length)];return rackFace(GM,r,Math.floor(Math.random()*r.cells.length),a.kind)};
+  if(a.kind==='op'){
+    const st=a.state&&a.state!=='work'?a.state:'work',p=[];
+    if(st!=='work'){if(a.hasCart){const c=cartStand(freeSlot(a));p.push(G(c.x,c.z,0,'drop'))}const[x,z]=breakRoom(st);p.push(G(x,z,0,'park'));a.path=p;return}
+    if(!a.hasCart){const c=cartStand(freeSlot(a));p.push(G(c.x,c.z,0,'take'))}
+    const k=rndClient(),f=rackOf(k),[zx,zz]=zonePt(k);p.push(G(f.x,f.z,0,'wait',.6),G(zx,zz,0,'wait',.6));a.path=p;return}
   const dz=D.zWall-2.6,docks=C.dockCfg.slice(0,C.docks).map((d,i)=>({d,i}));
-  if(Math.random()<.55){const ins=docks.filter(x=>(x.d.use==='in'||x.d.use==='both')&&(!CF||x.d.cl.some(inCF)));if(ins.length){const {d,i}=ins[Math.floor(Math.random()*ins.length)],dc=d.cl.filter(inCF),k=dc.length?dc[Math.floor(Math.random()*dc.length)]:rndClient(),acc=rackOf(k),dx=dockX(i);
-    a.path=[...(GM.mode==='croquis'?[here]:[]),P(dx,M,0),P(dx,dz,0),P(dx,M,1),...tag(acc.go,1),...tag(acc.back,0)];return}}
+  if(Math.random()<.55){const ins=docks.filter(x=>(x.d.use==='in'||x.d.use==='both')&&(!CF||x.d.cl.some(inCF)));if(ins.length){const {d,i}=ins[Math.floor(Math.random()*ins.length)],dc=d.cl.filter(inCF),k=dc.length?dc[Math.floor(Math.random()*dc.length)]:rndClient(),f=rackOf(k),dx=dockX(i);
+    a.path=[G(dx,dz,0,'wait',.8),G(f.x,f.z,1,'wait',.8)];return}}
   const k=rndClient(),outs=docks.filter(x=>dockAllows(C,x.i,k,'out')),pick=outs.length?outs[Math.floor(Math.random()*outs.length)]:docks[docks.length-1],dx=dockX(pick.i),[zx,zz]=zonePt(k);
-  a.path=[...(GM.mode==='croquis'?[here,P(zx,M,0)]:[]),P(zx,zz,0),P(dx,Math.max(zz,D.zWall-14),1),P(dx,dz,1),P(dx,Math.max(zz,D.zWall-14),0),P(zx,zz,0)];
+  a.path=[G(zx,zz,0,'wait',.8),G(dx,dz,1,'wait',.8)];
 }
+// distancias mínimas de seguridad (m) entre los puntos más cercanos de cada uno (uñas y contrapeso del autoelevador, persona y carro)
+const SAFE={opop:.75,fkop:1.8,fkfk:2.2};
+const bodyPts=(a,x,z,r=a.g.rotation.y)=>{const fx=Math.sin(r),fz=Math.cos(r);if(a.kind==='fk')return[[x+fx*1.9,z+fz*1.9],[x+fx*.5,z+fz*.5],[x-fx*1.0,z-fz*1.0]];return a.hasCart?[[x,z],[x+fx*1.15,z+fz*1.15]]:[[x,z]]};
+const gapOf=(a,ax,az,b,ar)=>{const A=bodyPts(a,ax,az,ar),B=bodyPts(b,b.g.position.x,b.g.position.z);let m=1e9;for(const p of A)for(const q of B)m=Math.min(m,Math.hypot(p[0]-q[0],p[1]-q[1]));return m};
+const safeD=(a,b)=>a.kind==='fk'&&b.kind==='fk'?SAFE.fkfk:a.kind==='op'&&b.kind==='op'?SAFE.opop:SAFE.fkop;
+const prioOf=a=>(a.kind==='op'?2:1)*100000-a.id; // las personas tienen prioridad sobre las máquinas
+function setCart(a,on){const u=a.g.userData,c=u.cart;if(!c)return;a.g.rotation.y=0;
+  if(on){if(a.cart){agentRoot.remove(a.cart);a.cart=null}a.g.add(c);c.position.set(0,0,0);c.rotation.set(0,0,0);a.hasCart=true;u.aL.rotation.x=u.aR.rotation.x=-1}
+  else{a.g.remove(c);c.position.copy(a.g.position);c.rotation.set(0,0,0);agentRoot.add(c);a.cart=c;a.hasCart=false;u.aL.rotation.x=u.aR.rotation.x=0}}
+function arrive(a,g){if(!g)return;if(g.act==='drop')setCart(a,false);else if(g.act==='take')setCart(a,true);else if(g.act==='park')a.parked=true;else if(g.act==='wait')a.hold=g.t||0}
+// si quedan enfrentados, el de menor prioridad se corre a un lugar libre fuera del camino del otro
+function yieldFrom(a,b){
+  const N=navGrid(),ok=N.ok[a.kind],need=safeD(a,b),bx=b.g.position.x,bz=b.g.position.z,d0=Math.hypot(a.g.position.x-bx,a.g.position.z-bz);
+  const route=[{x:bx,z:bz},...(b.route||[]),...(b.goal?[b.goal]:[])],segD=(px,pz)=>{let m=1e9;for(let i=0;i<route.length-1;i++){const p=route[i],q=route[i+1],vx=q.x-p.x,vz=q.z-p.z,L=vx*vx+vz*vz||1e-9,t=Math.max(0,Math.min(1,((px-p.x)*vx+(pz-p.z)*vz)/L));m=Math.min(m,Math.hypot(p.x+vx*t-px,p.z+vz*t-pz))}return route.length>1?m:Math.hypot(px-bx,pz-bz)};
+  const i0=N.ci(a.g.position.x),j0=N.cj(a.g.position.z);if(i0<0||j0<0||i0>=N.W||j0>=N.H)return false;
+  const s=j0*N.W+i0,from=new Int32Array(N.n).fill(-2),q=[s];from[s]=-1;
+  for(let h=0;h<q.length&&h<30000;h++){const k=q[h],i=k%N.W,j=(k-i)/N.W,px=N.cx(i),pz=N.cz(j);
+    if(k!==s&&ok[k]&&N.dist[k]>=NAV_CLR[a.kind]+.15&&Math.hypot(px-bx,pz-bz)>=need+2.4&&segD(px,pz)>=need+.9&&agents.every(o=>o===a||o===b||Math.hypot(o.g.position.x-px,o.g.position.z-pz)>=safeD(a,o)+2)){
+      const cells=[];for(let c=k;c!==-1;c=from[c])cells.push(c);cells.reverse();
+      // se conservan sólo los quiebres del recorrido en la grilla: no corta esquinas
+      const pts=[];for(let ix=1;ix<cells.length;ix++){const c=cells[ix],pv=cells[ix-1],nx=cells[ix+1];if(nx===undefined||nx-c!==c-pv){const ii=c%N.W;pts.push({x:N.cx(ii),z:N.cz((c-ii)/N.W)})}}
+      if(a.goal&&!a.goal.retreat)a.path.unshift(a.goal);a.goal={x:px,z:pz,c:a.goal?a.goal.c:0,act:'wait',t:1.6,retreat:true};a.route=pts;return true}
+    for(const[di,dj]of[[1,0],[-1,0],[0,1],[0,-1]]){const ii=i+di,jj=j+dj;if(ii<0||jj<0||ii>=N.W||jj>=N.H)continue;const kk=jj*N.W+ii;
+      if(from[kk]!==-2||!(ok[kk]||(!ok[k]&&N.dist[kk]>=N.dist[k]&&N.dist[kk]>0)))continue;if(Math.hypot(N.cx(ii)-bx,N.cz(jj)-bz)<d0-.05)continue;from[kk]=k;q.push(kk)}}
+  return false}
 function moveAgents(dt){
   const v=dt*(1.6+Math.min(4.5,Math.sqrt(speed)));
-  for(const a of agents){if(!a.path.length){if(a.parked)continue;newPath(a)}const p=a.path[0],dx=p.x-a.g.position.x,dz=p.z-a.g.position.z,d=Math.hypot(dx,dz);
-    if(d<.05){a.path.shift();continue}const s=Math.min(d,v*(a.kind==='fk'?1.4:1));a.g.position.x+=dx/d*s;a.g.position.z+=dz/d*s;
-    const ty=Math.atan2(dx,dz);let dr=ty-a.g.rotation.y;dr=Math.atan2(Math.sin(dr),Math.cos(dr));a.g.rotation.y+=dr*Math.min(1,dt*10);
-    const u=a.g.userData;if(a.kind==='op'){u.ph+=s*3.4;u.lL.rotation.x=Math.sin(u.ph)*.55;u.lR.rotation.x=-Math.sin(u.ph)*.55}else u.load.visible=!!p.c}
+  for(const a of agents){
+    if(a.hold>0){a.hold-=dt;if(a.hold>0)continue}
+    if(!a.route.length){
+      if(a.goal){const g=a.goal;a.goal=null;arrive(a,g);if(a.hold>0)continue}
+      if(!a.path.length){if(a.parked)continue;newPath(a)}
+      if(!a.path.length)continue;
+      a.goal=a.path.shift();a.route=navPath(a.kind,a.g.position.x,a.g.position.z,a.goal.x,a.goal.z);
+      if(!a.route.length)continue}
+    const p=a.route[0],px=a.g.position.x,pz=a.g.position.z,dx=p.x-px,dz=p.z-pz,d=Math.hypot(dx,dz);
+    if(d<.05){a.route.shift();continue}
+    const s=Math.min(d,v*(a.kind==='fk'?1.4:1)),nx=px+dx/d*s,nz=pz+dz/d*s,ty=Math.atan2(dx,dz);let dr=ty-a.g.rotation.y;dr=Math.atan2(Math.sin(dr),Math.cos(dr));const nr=a.g.rotation.y+dr*Math.min(1,dt*10);
+    // seguridad: no se acerca a nadie que esté dentro de su distancia mínima
+    let blk=null;for(const b of agents){if(b===a)continue;const bx=b.g.position.x,bz=b.g.position.z;if(Math.hypot(nx-bx,nz-bz)>8)continue;const need=safeD(a,b),d1=gapOf(a,nx,nz,b,nr);if(d1<need&&d1<gapOf(a,px,pz,b)-1e-4){blk=b;break}}
+    if(blk){a.wait+=dt;const mutual=blk.wait>0&&blk.blk===a;
+      if(!a.tried&&a.wait>(mutual?.8:1.5)&&(prioOf(a)<prioOf(blk)||a.wait>5)){a.tried=true;yieldFrom(a,blk)}
+      // cruce trabado: el de menor prioridad deja esa tarea y toma otra (el que tiene prioridad espera un poco más)
+      if(a.wait>(prioOf(a)<prioOf(blk)?7:12)){const keep=a.goal&&(a.goal.act==='drop'||a.goal.act==='take'||a.goal.act==='park');a.path=keep?[a.goal]:[];a.route=[];a.goal=null;a.wait=0;a.tried=false;a.hold=.4}
+      a.blk=blk;
+      const u=a.g.userData;if(a.kind==='op'){u.lL.rotation.x*=.8;u.lR.rotation.x*=.8}continue}
+    a.wait=0;a.blk=null;a.moved=(a.moved||0)+s;if(a.moved>1.5){a.tried=false;a.moved=0}a.g.position.x=nx;a.g.position.z=nz;a.g.rotation.y=nr;
+    const u=a.g.userData;if(a.kind==='op'){u.ph+=s*3.4;u.lL.rotation.x=Math.sin(u.ph)*.55;u.lR.rotation.x=-Math.sin(u.ph)*.55;if(!a.hasCart){u.aL.rotation.x=-Math.sin(u.ph)*.45;u.aR.rotation.x=Math.sin(u.ph)*.45}}else u.load.visible=!!(a.goal&&a.goal.c)}
 }
 function moveTraffic(dt){
   if(!layers.traffic||!pubCurve)return;
@@ -2461,7 +2581,7 @@ function renderCfMenu(){
   const b=$('#cfBtn');b.classList.toggle('on',!!CF);$('#cfLbl').textContent=CF?cfLabel():'Todos los clientes';b.title=CF?'Viendo: '+cfLabel():'Filtrar por cliente'}
 function setCF(next,fly=true){
   if(next){for(const id of[...next])if(!C.clients.some(k=>k.id===id))next.delete(id);if(!next.size||next.size>=C.clients.length)next=null}
-  const was=CF;CF=next;LASTN.fill(-1);LASTP.fill(-1);for(const a of agents)a.path=[];syncAgents();applyCF3D();renderCfMenu();if(typeof renderTrk==='function')renderTrk(true);dirty=true;updateUI(true);
+  const was=CF;CF=next;LASTN.fill(-1);LASTP.fill(-1);for(const a of agents){a.path=[];a.route=[];a.goal=null}syncAgents();applyCF3D();renderCfMenu();if(typeof renderTrk==='function')renderTrk(true);dirty=true;updateUI(true);
   if(fly&&camera){if(CF)flyToClients();else if(was)setView('general')}
 }
 function toggleCf(open){const m=$('#cfMenu');if(!m||m.hidden===!open)return;if(open)renderCfMenu();m.hidden=!open;$('#cfBtn').setAttribute('aria-expanded',open)}

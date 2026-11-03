@@ -359,7 +359,7 @@ input[type=datetime-local],input[type=number]{width:100%;min-width:0;padding:5px
       <div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5 21 7v10l-9 4.5L3 17V7z"/><path d="M3 7l9 4.5L21 7M12 11.5v10"/></svg></div>
       <div><h1>Gemelo Digital <em>CD</em><span class="badge" id="dataBadge">datos de ejemplo</span></h1><p>Centro de distribución · simulación en vivo</p></div>
     </div>
-    <label class="site" for="zoneSel"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span id="siteName">CD Pacheco</span><span>·</span><select id="zoneSel" aria-label="Sector"></select></label>
+    <label class="site" for="zoneSel"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span id="siteName">CD Demo</span><span>·</span><select id="zoneSel" aria-label="Sector"></select></label>
     <div class="search">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       <input id="q" type="search" placeholder="Buscar SKU, pedido, envío, patente o posición" autocomplete="off" aria-label="Buscar">
@@ -487,7 +487,7 @@ const C={layout:'croquis',rows:6,bays:12,levels:4,docks:8,inDocks:2,forklifts:4,
   nShifts:2,shifts:[{n:'Mañana',s:420,e:840},{n:'Tarde',s:840,e:1260},{n:'Noche',s:1260,e:240}],ops:[9,8,3],slaOpen:true,
   ordersDay:1100,baseOrdersH:1100/PSUM,lpo:4,prod:45,cap:40,peak:0,seq:'fifo',slotting:false,cdClosed:false,
   brk:{on:true,lunch:60,groups:3,after:4,wc:2,wcMin:8},horizon:'dia',day0:0,days:[{on:1,sh:3,vol:100},{on:1,sh:3,vol:100},{on:1,sh:3,vol:100},{on:1,sh:3,vol:100},{on:1,sh:3,vol:100},{on:0,sh:1,vol:40},{on:0,sh:1,vol:15}],
-  recvPal:12,load:35,unloadBase:80,truckCap:45,maxWait:90,sla:240,tripMin:150,demand:true,site:'CD Pacheco',park:'Pacheco Trade Center',sunrise:390,sunset:1170,
+  recvPal:12,load:35,unloadBase:80,truckCap:45,maxWait:90,sla:240,tripMin:150,demand:true,site:'CD Demo',park:'Portón de entrada y salida de vehículos',sunrise:390,sunset:1170,
   clients:[{id:'HP',n:'Cliente 1',share:35,inDay:5,col:0x1f8fd6},{id:'SPX',n:'Cliente 2',share:30,inDay:5,col:0x4a5563},{id:'MOT',n:'Cliente 3',share:15,inDay:2,col:0xe0582b},
     {id:'GSK',n:'Cliente 4',share:2,inDay:.5,col:0xd9478f},{id:'MDT',n:'Cliente 5',share:9,inDay:1,col:0x13a08a},{id:'COV',n:'Cliente 6',share:9,inDay:1,col:0x8a5cd6}]};
 const CROQ_DOCKS=()=>[{use:'in',cl:['SPX','HP','GSK']},{use:'in',cl:['SPX','HP','GSK']},{use:'in',cl:['MOT']},{use:'out',cl:['HP','SPX','MOT','GSK']},{use:'out',cl:['HP','SPX','MOT','GSK']},{use:'out',cl:['HP','SPX','MOT','GSK']},{use:'both',cl:['MDT','COV']},{use:'both',cl:['MDT','COV']}];
@@ -1049,14 +1049,14 @@ function buildLayout(){
   syncAgents();applyLayers();applyCF3D();updateSky();dirty=true;
 }
 function parkSignTex(text){return canvasTex(1400,190,(x,w,h)=>{x.fillStyle='#fbfcfd';x.fillRect(0,0,w,h);x.strokeStyle='#26338a';x.lineWidth=16;x.strokeRect(8,8,w-16,h-16);x.lineWidth=3;x.strokeRect(26,26,w-52,h-52);
-  x.font='700 96px Georgia,"Times New Roman",serif';x.textAlign='center';x.textBaseline='middle';const t=text.toUpperCase();
+  x.textAlign='center';x.textBaseline='middle';const t=text.toUpperCase();let fs=96;do{x.font=`700 ${fs}px Georgia,"Times New Roman",serif`;fs-=2}while(fs>36&&x.measureText(t).width>w-120);
   x.fillStyle='rgba(20,30,90,.25)';x.fillText(t,w/2+5,h/2+9);x.fillStyle='#24317f';x.fillText(t,w/2,h/2+4)})}
 function buildGate(D){
   const g=new THREE.Group();g.position.set(D.gx,0,D.gz);root.add(g);const own=m=>{m.castShadow=true;m.receiveShadow=true;g.add(m);return m};
   const bx=(mat,p,s)=>{const m=new THREE.Mesh(BOX,mat);m.position.set(...p);m.scale.set(...s);return own(m)};
   const pil=std({color:0xd9ceb2,roughness:.85}),steel=std({color:0x2a2f38,roughness:.5,metalness:.5});
   for(const z of[-7.2,7.2])bx(pil,[0,3.9,z],[1.6,7.8,1.5]);
-  const st=parkSignTex(C.park||'Pacheco Trade Center'),sm=std({map:st,roughness:.55}),nav=std({color:0x26338a,roughness:.5});
+  const st=parkSignTex(C.park||'Portón de entrada y salida de vehículos'),sm=std({map:st,roughness:.55}),nav=std({color:0x26338a,roughness:.5});
   const sign=new THREE.Mesh(BOX,[sm,sm,nav,nav,nav,nav]);sign.userData.own=true;sign.position.set(.2,8.6,0);sign.scale.set(.9,2,16.4);own(sign);
   bx(std({color:0xaab3bc,roughness:.5,metalness:.4}),[-5.4,8.95,0],[10.6,.1,15.6]);
   const tr=[];for(let i=0;i<=8;i++){const x=-.4-i*1.3;tr.push([x,7.95,-7.6+0],[x,7.95,7.6])}
@@ -1649,7 +1649,7 @@ function renderConfig(){
   <section class="grp"><h3>Transporte</h3>${stepper('truckCap')}${stepper('maxWait')}${stepper('tripMin')}</section>
   <section class="grp"><h3>Sitio e indicadores</h3>
     <div class="row"><label for="siteIn">Nombre del sitio</label><input type="text" id="siteIn" value="${esc(C.site)}" maxlength="40" style="max-width:210px"></div>
-    <div class="row"><label for="parkIn">Cartel de la portería</label><input type="text" id="parkIn" value="${esc(C.park)}" maxlength="34" style="max-width:210px"></div>
+    <div class="row"><label for="parkIn">Cartel de la portería</label><input type="text" id="parkIn" value="${esc(C.park)}" maxlength="48" style="max-width:210px"></div>
     <p class="note">Indicadores visibles sobre la escena:</p>
     <div class="checks">${KPI.map(([k,l])=>`<label><input type="checkbox" data-kpi="${k}"${KPI_ON.has(k)?' checked':''}>${l}</label>`).join('')}</div></section>
   <section class="grp"><h3>Capas y vista</h3>
@@ -1726,7 +1726,7 @@ $('#tab-config').addEventListener('change',e=>{const t=e.target;
   else if(t.id==='cmode'){colorMode=t.value;dirty=true}
   else if(t.dataset.layer){layers[t.dataset.layer]=t.checked;applyLayers()}
   else if(t.dataset.kpi){const k=t.dataset.kpi;t.checked?KPI_ON.add(k):KPI_ON.delete(k);$('#k-'+k).hidden=!t.checked;if(t.checked&&!kpiShow)setKpiShow(true)}
-  else if(t.id==='parkIn'){C.park=t.value.trim()||'Pacheco Trade Center';buildLayout();toast('Cartel de la portería actualizado.')}
+  else if(t.id==='parkIn'){C.park=t.value.trim()||'Portón de entrada y salida de vehículos';buildLayout();toast('Cartel de la portería actualizado.')}
   else if(t.id==='sunR'||t.id==='sunS'){const v=parseHM(t.value);if(v!=null){C[t.id==='sunR'?'sunrise':'sunset']=v;toast(`Sol: amanece ${hm(C.sunrise)} y se pone ${hm(C.sunset)}.`)}}
   else if(t.id==='siteIn'){C.site=t.value.trim()||'Centro de distribución';$('#siteName').textContent=C.site;buildLayout();toast('Nombre del sitio actualizado en el cartel de la portería.')}
   refreshConfigVals();updateUI(true);

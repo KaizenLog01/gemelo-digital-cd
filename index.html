@@ -469,6 +469,7 @@ input[type=datetime-local],input[type=number]{width:100%;min-width:0;padding:5px
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.1/build/mp4-muxer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 (function(){
 "use strict";
@@ -487,8 +488,8 @@ const C={layout:'croquis',rows:6,bays:12,levels:4,docks:8,inDocks:2,forklifts:4,
   ordersDay:1100,baseOrdersH:1100/PSUM,lpo:4,prod:45,cap:40,peak:0,seq:'fifo',slotting:false,cdClosed:false,
   brk:{on:true,lunch:60,groups:3,after:4,wc:2,wcMin:8},horizon:'dia',day0:0,days:[{on:1,sh:3,vol:100},{on:1,sh:3,vol:100},{on:1,sh:3,vol:100},{on:1,sh:3,vol:100},{on:1,sh:3,vol:100},{on:0,sh:1,vol:40},{on:0,sh:1,vol:15}],
   recvPal:12,load:35,unloadBase:80,truckCap:45,maxWait:90,sla:240,tripMin:150,demand:true,site:'CD Pacheco',park:'Pacheco Trade Center',sunrise:390,sunset:1170,
-  clients:[{id:'HP',n:'HP',share:35,inDay:5,col:0x1f8fd6},{id:'SPX',n:'Space X',share:30,inDay:5,col:0x4a5563},{id:'MOT',n:'Motorola',share:15,inDay:2,col:0xe0582b},
-    {id:'GSK',n:'GSK',share:2,inDay:.5,col:0xd9478f},{id:'MDT',n:'Medtronic',share:9,inDay:1,col:0x13a08a},{id:'COV',n:'Covidien',share:9,inDay:1,col:0x8a5cd6}]};
+  clients:[{id:'HP',n:'Cliente 1',share:35,inDay:5,col:0x1f8fd6},{id:'SPX',n:'Cliente 2',share:30,inDay:5,col:0x4a5563},{id:'MOT',n:'Cliente 3',share:15,inDay:2,col:0xe0582b},
+    {id:'GSK',n:'Cliente 4',share:2,inDay:.5,col:0xd9478f},{id:'MDT',n:'Cliente 5',share:9,inDay:1,col:0x13a08a},{id:'COV',n:'Cliente 6',share:9,inDay:1,col:0x8a5cd6}]};
 const CROQ_DOCKS=()=>[{use:'in',cl:['SPX','HP','GSK']},{use:'in',cl:['SPX','HP','GSK']},{use:'in',cl:['MOT']},{use:'out',cl:['HP','SPX','MOT','GSK']},{use:'out',cl:['HP','SPX','MOT','GSK']},{use:'out',cl:['HP','SPX','MOT','GSK']},{use:'both',cl:['MDT','COV']},{use:'both',cl:['MDT','COV']}];
 C.dockCfg=CROQ_DOCKS();
 const inTot=c=>c.clients.reduce((a,k)=>a+(+k.inDay||0),0);
@@ -574,9 +575,9 @@ const CROQUIS={
   rh:[[14,46,52,1,'C'],[15,46,52,-1,'C'],[17,46,52,1,'C'],[18,46,52,-1,'C'],[20,46,52,1,'C'],[21,46,52,-1,'C'],[23,46,52,1,'C'],[24,46,52,-1,'C'],
     [26,46,52,1,'C'],[27,46,52,-1,'C'],[29,46,52,1,'C'],[30,46,52,-1,'C'],[32,46,52,1,'C'],[20,36,40,1,'D','shelf'],[21,36,40,-1,'D','shelf'],[23,36,40,1,'D','shelf']],
   // salas: [nombre, c0, f0, c1, f1, tipo]
-  rooms:[['Etiquetado',31,14,34,23,'work'],['Oficina NC',35,14,37,17,'office'],['Oficina COV',38,14,40,17,'office'],['Space X',29,17,30,23,'cage'],
+  rooms:[['Etiquetado',31,14,34,23,'work'],['Oficina NC',35,14,37,17,'office'],['Oficina Cliente 6',38,14,40,17,'office'],['Cliente 2',29,17,30,23,'cage'],
     ['Vestuario masculino',14,29,20,33,'locker'],['Vestuario femenino',21,29,28,33,'locker'],['Comedor',14,35,28,50,'dining'],['Inventario',7,40,10,50,'office'],
-    ['Escuelita',12,40,13,50,'training'],['Motorola',29,29,30,36,'office'],['Jefe de Operación',29,37,30,40,'office'],['SAC',29,41,30,47,'office'],['Despacho',29,48,30,50,'office'],['Oficina MDT',51,43,52,50,'office']],
+    ['Escuelita',12,40,13,50,'training'],['Oficina Cliente 3',29,29,30,36,'office'],['Jefe de Operación',29,37,30,40,'office'],['SAC',29,41,30,47,'office'],['Despacho',29,48,30,50,'office'],['Oficina Cliente 5',51,43,52,50,'office']],
   tables:[['Preparación',44,15,45,21],['Cerrado de pedido',44,24,45,31]],
   areas:[['PREPARACIÓN Y CERRADO',44,14,45,42,0xf6dcc8]],
   walks:[[31,24,40,25],[31,26,31,50],[40,26,40,47],[40,46,50,47],[13,27,31,28],[13,29,13,37],[11,38,13,39],[11,40,11,50]],
@@ -632,7 +633,7 @@ function newState(c){
   if(IMP&&IMP.n===nPos(c)){S.pos=structuredClone(IMP.pos);reindex(S)}
   return S;
 }
-const PFX={HP:'HP',SPX:'SPX',MOT:'MOT',GSK:'GSK',MDT:'MDT',COV:'COV'};
+const PFX={HP:'C1',SPX:'C2',MOT:'C3',GSK:'C4',MDT:'C5',COV:'C6'};
 function initStock(S,c){
   const g=geom(c),n=g.n;S.pos=new Array(n);
   for(const k of c.clients){
@@ -2232,7 +2233,7 @@ function sampleOrders(){
 /* ---------------- Panel: Clientes ---------------- */
 const USE_LBL={in:'Recepción',out:'Despacho',both:'Recibe y despacha',off:'Sin uso'};
 const CLI_STOCK={HP:'Sector A, racks R01 a R18 (columnas C a P)',SPX:'Sector A, racks R19 a R35 (columnas R a AD)',MOT:'Sector B, racks R37 a R49',GSK:'Estantería de bins R36 y estanterías R63 a R65',MDT:'Sector C, racks horizontales R58 a R62',COV:'Sector C, racks horizontales R50 a R57'};
-const CLI_ZONE_TXT={HP:'Zona de preparación (AO–AQ) y mesas de preparación y cerrado',SPX:'Jaula Space X (AC–AD)',MOT:'Frente al muelle 3 (AF–AM, filas 26 a 28)',GSK:'Frente a sus estanterías (AI–AN)',MDT:'Zona celeste derecha, junto a la oficina MDT',COV:'Zona celeste izquierda (AT–AW)'};
+const CLI_ZONE_TXT={HP:'Zona de preparación (AO–AQ) y mesas de preparación y cerrado',SPX:'Jaula del cliente (AC–AD)',MOT:'Frente al muelle 3 (AF–AM, filas 26 a 28)',GSK:'Frente a sus estanterías (AI–AN)',MDT:'Zona celeste derecha, junto a su oficina',COV:'Zona celeste izquierda (AT–AW)'};
 function cliStats(){const tot={};for(const k of C.clients)tot[k.id]={cur:0,staged:0,inyard:0,docked:0};
   for(const o of S.orders)if(tot[o.k])tot[o.k].cur++;for(const o of S.staged)if(tot[o.k])tot[o.k].staged++;
   for(const y of S.yard)if(tot[y.cl])tot[y.cl].inyard++;for(const d of S.docks)if(d.tr&&tot[d.tr.cl])tot[d.tr.cl].docked++;return tot}
@@ -2265,14 +2266,14 @@ $('#tab-cli').addEventListener('change',e=>{const t=e.target;
   if(t.dataset.ci!=null){C.clients[+t.dataset.ci].inDay=Math.max(0,+t.value||0);invalidateFuture();renderCli();updateUI(true);return}
   if(t.dataset.du!=null){C.dockCfg[+t.dataset.du].use=t.value;invalidateFuture();buildLayout();renderCli();updateUI(true);toast(`Muelle ${+t.dataset.du+1}: ${USE_LBL[t.value].toLowerCase()}.`)}});
 $('#tab-cli').addEventListener('click',e=>{const b=e.target.closest('[data-dk]');if(b){const d=C.dockCfg[+b.dataset.dk],id=b.dataset.cl,i=d.cl.indexOf(id);if(i>=0)d.cl.splice(i,1);else d.cl.push(id);invalidateFuture();buildLayout();renderCli();updateUI(true);return}
-  if(e.target.id==='dockReset'){C.dockCfg=CROQ_DOCKS();invalidateFuture();buildLayout();renderCli();updateUI(true);toast('Muelles restaurados: 1 y 2 importaciones de Space X y HP, 3 Motorola, 4 a 6 despacho, 7 y 8 Medtronic y Covidien.')}});
+  if(e.target.id==='dockReset'){C.dockCfg=CROQ_DOCKS();invalidateFuture();buildLayout();renderCli();updateUI(true);toast('Muelles restaurados: 1 y 2 recepción de Cliente 1, 2 y 4; 3 recepción de Cliente 3; 4 a 6 despacho; 7 y 8 Cliente 5 y 6.')}});
 /* zonas de preparación por cliente */
 const CZONE={HP:[41,14,43,42],SPX:[29,17,30,23],MOT:[32,26,39,28],GSK:[35,18,40,19],COV:[46,33,49,42],MDT:[50,33,52,42]};
 function clientZone(id){
   if(geom(C).mode==='croquis'){const z=CZONE[id];if(z)return{x0:gx0(z[0])+.2,x1:gx0(z[2]+1)-.2,z0:gz0(z[1])+.2,z1:gz0(z[3]+1)-.2}}
   const d=zoneRects().disp,ids=CLI_IDS(),i=Math.max(0,ids.indexOf(id)),w=(d.x1-d.x0)/ids.length;return{x0:d.x0+i*w,x1:d.x0+(i+1)*w,z0:d.z0,z1:d.z1}}
 const matchClient=s=>{const v=norm(s);if(!v)return null;for(const k of C.clients){const a=norm(k.n),b=norm(k.id);if(v===a||v===b||v.includes(a)||(b.length>2&&v.startsWith(b)))return k.id}
-  if(v.includes('spacex'))return'SPX';if(v.includes('medtron'))return'MDT';if(v.includes('covid'))return'COV';if(v.includes('motor'))return'MOT';if(/^hp|hewlett/.test(v))return'HP';return null};
+  return null};
 
 /* ---------------- Panel: Datos ---------------- */
 function dropzone(id,label,hint){return`<div class="drop" data-drop="${id}"><input type="file" id="f-${id}" accept=".xlsx,.xls,.xlsm,.csv,.txt" hidden>
@@ -2515,6 +2516,24 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 
+window.GD={
+  getState(){const d=x=>x instanceof Date?x.toISOString():x;return{v:1,config:JSON.parse(JSON.stringify(C)),escenarios:SCEN.slice(),ahorro:AH,
+    inventario:INV?{rows:INV.rows.map(r=>({...r,vto:d(r.vto)})),map:INV.map,headers:INV.headers,sheet:INV.sheet,sheets:INV.sheets,bad:INV.bad,file:INV.file||''}:null,invAplicado:!!IMP,
+    pedidos:PED?{...PED,orders:PED.orders.map(o=>({...o,comp:d(o.comp),ing:d(o.ing)}))}:null,fc:{rule:FC.rule,prod:FC.prod,target:d(FC.target)},kpis:[...KPI_ON]}},
+  setState(s){if(!s||typeof s!=='object')return;const D=v=>v?new Date(v):null;
+    if(s.config){Object.assign(C,s.config);if(!Array.isArray(C.dockCfg))C.dockCfg=CROQ_DOCKS()}
+    if(Array.isArray(s.escenarios)){SCEN.length=0;SCEN.push(...s.escenarios)}
+    if(s.ahorro&&Array.isArray(s.ahorro.cats)){AH=s.ahorro;ahSave()}
+    if(s.fc){FC.rule=s.fc.rule||FC.rule;FC.prod=s.fc.prod||FC.prod;FC.target=D(s.fc.target)}
+    if(Array.isArray(s.kpis)){KPI_ON.clear();s.kpis.forEach(k=>KPI_ON.add(k));KPI.forEach(([k])=>{const el=$('#k-'+k);if(el)el.hidden=!KPI_ON.has(k)})}
+    INV=s.inventario?{...s.inventario,rows:s.inventario.rows.map(r=>({...r,vto:D(r.vto)}))}:null;
+    PED=s.pedidos?{...s.pedidos,orders:s.pedidos.orders.map(o=>({...o,comp:D(o.comp),ing:D(o.ing)}))}:null;
+    IMP=null;GEOMK=null;
+    if(s.invAplicado&&INV){try{applyInventory(INV)}catch(e){console.error(e);IMP=null}}
+    if(!IMP){S=freshState(C);SNAPS.clear();snap();camFitted=false;buildLayout()}
+    lastPredT=-99;$('#siteName').textContent=C.site;syncHor();renderConfig();renderDatos();renderPrep();
+    if($('#drawer').classList.contains('open'))showTab(tab);dirty=true;updateUI(true)},
+  toast:m=>toast(m)};
 renderConfig();renderDatos();renderPrep();
 SCEN.push({name:'Base: '+scenName(),...runDay(JSON.parse(JSON.stringify(C)))});
 {const c=JSON.parse(JSON.stringify(C));c.peak=30;SCEN.push({name:`Ejemplo: Pico +30% · ${SEQ[c.seq].n} · ${activeOps(c).join('/')} op. · ${c.docks} muelles · ${c.fleet} camiones`,...runDay(c)})}
@@ -2536,4 +2555,5 @@ document.addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(document
 })();
 </script>
 
+<script src="nube.js"></script>
 </body></html>

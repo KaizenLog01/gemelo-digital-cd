@@ -1,0 +1,2 @@
+// Entrega al navegador solo la URL y la clave publica (anon/publishable) de Supabase. Nunca la service_role.
+module.exports = (req, res) => { const e = process.env; const url = e.NEXT_PUBLIC_SUPABASE_URL || e.SUPABASE_URL || ''; const key = e.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || e.NEXT_PUBLIC_SUPABASE_ANON_KEY || e.SUPABASE_PUBLISHABLE_KEY || e.SUPABASE_ANON_KEY || ''; res.setHeader('Cache-Control', 'no-store'); res.setHeader('Content-Type', 'application/json; charset=utf-8'); res.statusCode = 200; res.end(JSON.stringify({ url, key })); };

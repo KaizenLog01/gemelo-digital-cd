@@ -1,4 +1,47 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+/* editor de layout */
+.toast{z-index:300}
+.led{position:fixed;inset:0;z-index:250;background:var(--bg);display:flex;flex-direction:column}
+.led[hidden]{display:none}
+.led-top{display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:var(--surface);border-bottom:1px solid var(--line)}
+.led-top h2{margin:0;font:800 16px/1.2 var(--f-body)}
+.led-top .sp{flex:1}
+.led-body{flex:1;min-height:0;display:grid;grid-template-columns:236px minmax(0,1fr) 272px}
+.led-tools,.led-side{overflow:auto;padding:10px 12px 16px;background:var(--surface)}
+.led-tools{border-right:1px solid var(--line)}
+.led-side{border-left:1px solid var(--line);font-size:13px}
+.led-tools h3,.led-side h3{font:700 11px/1.2 var(--f-body);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:14px 0 6px}
+.led-tools h3:first-child,.led-side h3:first-child{margin-top:4px}
+.led-tool{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:6px 8px;margin:1px 0;border:1px solid transparent;border-radius:8px;background:none;cursor:pointer;font-size:13px}
+.led-tool:hover{background:var(--surface2)}
+.led-tool[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:700}
+.led-tool i{width:14px;height:14px;border-radius:3px;flex:none;border:1px solid rgba(0,0,0,.15)}
+.led-f{display:flex;flex-direction:column;gap:4px;margin:8px 0}
+.led-f>span{font-size:12px;color:var(--muted);font-weight:600}
+.led-f select,.led-f input[type=text]{max-width:none;width:100%}
+.led-stp{display:flex;align-items:center;gap:6px}
+.led-stp b{min-width:64px;text-align:center;font-variant-numeric:tabular-nums}
+.led-stp button{width:30px;height:30px;border:1px solid var(--line2);border-radius:8px;background:var(--surface);cursor:pointer;font-size:16px;line-height:1}
+.led-stp button:hover{border-color:var(--accent);color:var(--accent)}
+.led-cv{position:relative;min-width:0;min-height:0;overflow:hidden;background:#dfe5ea}
+.led-cv canvas{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
+.led-hint{position:absolute;left:12px;right:12px;bottom:10px;margin:0;padding:7px 10px;background:rgba(19,28,38,.86);color:#fff;border-radius:8px;font-size:12.5px;line-height:1.35;pointer-events:none;max-width:640px}
+.led-pos{position:absolute;right:10px;top:8px;padding:3px 8px;background:rgba(255,255,255,.9);border-radius:6px;font:600 12px var(--f-mono);color:var(--muted);pointer-events:none}
+.led-pos:empty{display:none}
+.led-stat{display:grid;grid-template-columns:1fr auto;gap:3px 10px;margin:4px 0}
+.led-stat b{font-variant-numeric:tabular-nums;text-align:right}
+.led-warn{margin:8px 0 0;padding:7px 9px;border-radius:8px;background:#fff4e0;color:#7a4b00;font-size:12px}
+.led-side .btn{margin-top:6px}
+@media (max-width:900px){
+  .led-body{grid-template-columns:1fr;grid-template-rows:auto minmax(300px,1fr) auto}
+  .led-tools{border-right:0;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:4px 6px;max-height:34vh}
+  .led-tools h3{width:100%;margin:6px 0 2px}
+  .led-tool{width:auto;padding:5px 8px}
+  .led-tools .led-f{width:100%}
+  .led-side{border-left:0;border-top:1px solid var(--line);max-height:30vh}
+  .led-hint{left:6px;right:6px;bottom:6px;padding:5px 8px;font-size:11px}
+}
+</style></head><body>
 <title>Gemelo Digital CD</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -366,6 +409,7 @@ input[type=datetime-local],input[type=number]{width:100%;min-width:0;padding:5px
       <div class="results" id="results" hidden></div>
     </div>
     <div class="topr">
+      <button class="btn" id="ledBtn" title="Modificar racks, muelles, zonas y módulos del depósito"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9M15 3v6"/></svg>Editar layout</button>
       <button class="btn" id="panelBtn" aria-expanded="false" aria-controls="drawer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Panel de control</button>
       <div class="dlwrap"><button class="btn" id="dlBtn" aria-haspopup="true" aria-expanded="false"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>Descargas</button>
         <div class="dlmenu" id="dlMenu" hidden>
@@ -464,6 +508,22 @@ input[type=datetime-local],input[type=number]{width:100%;min-width:0;padding:5px
   </footer>
 </div>
 <div class="toast" id="toast" hidden></div>
+<div class="led" id="led" hidden role="dialog" aria-modal="true" aria-labelledby="ledTitle">
+  <div class="led-top">
+    <div><h2 id="ledTitle">Editor de layout</h2><p class="note" id="ledInfo"></p></div>
+    <div class="sp"></div>
+    <button class="btn sm" id="ledUndo" title="Deshacer (Ctrl+Z)">Deshacer</button>
+    <button class="btn sm" id="ledReset">Volver al croquis original</button>
+    <button class="btn sm" id="ledCancel">Cancelar</button>
+    <button class="btn sm primary" id="ledApply">Aplicar al gemelo</button>
+  </div>
+  <div class="led-body">
+    <div class="led-tools" id="ledTools" role="toolbar" aria-label="Herramientas del editor"></div>
+    <div class="led-cv" id="ledWrap"><canvas id="ledCv" aria-label="Plano del depósito"></canvas><p class="led-hint" id="ledHint"></p><span class="led-pos" id="ledPos"></span></div>
+    <aside class="led-side" id="ledSide" aria-live="polite"></aside>
+  </div>
+</div>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -490,7 +550,8 @@ const C={layout:'croquis',rows:6,bays:12,levels:4,docks:8,inDocks:2,forklifts:4,
   recvPal:12,load:35,unloadBase:80,truckCap:45,maxWait:90,sla:240,tripMin:150,demand:true,site:'CD Demo',park:'Portón de entrada y salida de vehículos',sunrise:390,sunset:1170,
   clients:[{id:'HP',n:'Cliente 1',share:35,inDay:5,col:0x1f8fd6},{id:'SPX',n:'Cliente 2',share:30,inDay:5,col:0x4a5563},{id:'MOT',n:'Cliente 3',share:15,inDay:2,col:0xe0582b},
     {id:'GSK',n:'Cliente 4',share:2,inDay:.5,col:0xd9478f},{id:'MDT',n:'Cliente 5',share:9,inDay:1,col:0x13a08a},{id:'COV',n:'Cliente 6',share:9,inDay:1,col:0x8a5cd6}]};
-const CROQ_DOCKS=()=>[{use:'in',cl:['SPX','HP','GSK']},{use:'in',cl:['SPX','HP','GSK']},{use:'in',cl:['MOT']},{use:'out',cl:['HP','SPX','MOT','GSK']},{use:'out',cl:['HP','SPX','MOT','GSK']},{use:'out',cl:['HP','SPX','MOT','GSK']},{use:'both',cl:['MDT','COV']},{use:'both',cl:['MDT','COV']}];
+const CROQ_DOCKS0=()=>[{use:'in',cl:['SPX','HP','GSK']},{use:'in',cl:['SPX','HP','GSK']},{use:'in',cl:['MOT']},{use:'out',cl:['HP','SPX','MOT','GSK']},{use:'out',cl:['HP','SPX','MOT','GSK']},{use:'out',cl:['HP','SPX','MOT','GSK']},{use:'both',cl:['MDT','COV']},{use:'both',cl:['MDT','COV']}];
+const CROQ_DOCKS=()=>C.croq&&Array.isArray(C.croq.dockCfg)?JSON.parse(JSON.stringify(C.croq.dockCfg)):CROQ_DOCKS0();
 C.dockCfg=CROQ_DOCKS();
 const inTot=c=>c.clients.reduce((a,k)=>a+(+k.inDay||0),0);
 let IMP=null; // inventario importado {n,pos}
@@ -564,9 +625,9 @@ function shuffle(a,S){for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd(S)*(i
 /* ---------------- Layout: croquis del depósito (Excel) o paramétrico ---------------- */
 // Grilla del croquis: columnas B..AZ (2..52) y filas 2..50. Cada celda ≈ 2,0 m de ancho × 1,22 m de largo (una posición de pallet).
 const CW=2.0,RH=1.22,LEV=1.6;
-const gx0=c=>(c-2)*CW-51*CW/2,gxc=c=>gx0(c)+CW/2,gz0=r=>(r-2)*RH,gzc=r=>gz0(r)+RH/2;
+const GW=()=>((C.layout!=='param'&&C.croq)||CROQ_DEF).W||51,gx0=c=>(c-2)*CW-GW()*CW/2,gxc=c=>gx0(c)+CW/2,gz0=r=>(r-2)*RH,gzc=r=>gz0(r)+RH/2;
 const colName=c=>{let s='',n=c;while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26)}return s};
-const CROQUIS={
+const CROQ_DEF={
   // racks verticales: [columna, fila inicio, fila fin, lado hacia el compañero o la pared (+1 derecha, -1 izquierda), sector, tipo]
   rv:[[3,3,16,1,'A'],[4,3,16,-1,'A'],
     ...[6,9,12,15,18,21,24,27].flatMap(c=>[[c,3,16,1,'A'],[c+1,3,16,-1,'A'],[c,18,23,1,'A'],[c+1,18,23,-1,'A']]),[30,3,16,1,'A'],
@@ -584,26 +645,28 @@ const CROQUIS={
   docks:[[3,3,31],[5,5,31],[32,32,29],[34,34,29],[36,36,29],[38,38,29],[43,44,44],[47,48,44]],
   walls:[[31,2,31,13]],pdoors:[11,31],mainRow:25
 };
-const CART_PARK=[14,28,28,28]; // dentro de la senda peatonal frente a vestuarios y comedor, fuera del paso de los autoelevadores
+// ancho en columnas, estacionamiento de carros, sendas sólo peatonales, zonas de preparación por cliente, recepción y pre-despacho
+Object.assign(CROQ_DEF,{W:51,cart:[14,28,28,28],pwalk:[[13,27,31,28]],zones:{HP:[41,14,43,42],SPX:[29,17,30,23],MOT:[32,26,39,28],GSK:[35,18,40,19],COV:[46,33,49,42],MDT:[50,33,52,42]},recv:[3,31,5,50],disp:[46,33,52,42]});
+const CRQ=()=>((C.layout!=='param'&&C.croq)||CROQ_DEF);
 let GEOMK=null,GEOM=null;
 function geom(c){
-  const key=(c.layout||'croquis')+'|'+c.rows+'x'+c.bays+'|'+c.levels+'|'+c.docks+'|'+c.clients.map(k=>k.id+k.share).join(',');if(GEOMK===key)return GEOM;
+  const key=(c.layout||'croquis')+'|'+(c.croq&&c.layout!=='param'?c.croq.rev:0)+'|'+c.rows+'x'+c.bays+'|'+c.levels+'|'+c.docks+'|'+c.clients.map(k=>k.id+k.share).join(',');if(GEOMK===key)return GEOM;
   const racks=[],pos=[],idx={};
   const addRack=(o,line,cells,side,sector,kind,slots,cellLen)=>{const id=racks.length+1;const r={id,o,line,cells,side,sector,kind:kind||'rack',slots,cellLen};racks.push(r);
     cells.forEach((a,j)=>{for(let s=0;s<slots;s++){const off=slots>1?(s-(slots-1)/2)*cellLen/slots:0,b=j*slots+s+1;
       for(let l=0;l<c.levels;l++){const p={r:id,b,l,o,x:o==='v'?line:a+off,z:o==='v'?a+off:line,ri:id-1};idx[id+'-'+b+'-'+(l+1)]=pos.length;pos.push(p)}}})};
   let G;
   if((c.layout||'croquis')==='croquis'){
-    for(const[col,r0,r1,side,sec,kind]of CROQUIS.rv){const cells=[];for(let r=r0;r<=r1;r++)cells.push(gzc(r));addRack('v',gxc(col)+side*.35,cells,side,sec,kind,1,RH)}
-    for(const[row,c0,c1,side,sec,kind]of CROQUIS.rh){const cells=[];for(let k=c0;k<=c1;k++)cells.push(gxc(k));addRack('h',gzc(row)+side*.04,cells,side,sec,kind,2,CW)}
-    G={mode:'croquis',halfW:51*CW/2,zWall:gz0(51),zBack:-.15,zFront:gz0(24),mainZ:gzc(CROQUIS.mainRow),docks:CROQUIS.docks.map(([a,b])=>(gx0(a)+gx0(b+1))/2)};
+    for(const[col,r0,r1,side,sec,kind,cl]of CRQ().rv){const cells=[];for(let r=r0;r<=r1;r++)cells.push(gzc(r));addRack('v',gxc(col)+side*.35,cells,side,sec,kind,1,RH);racks[racks.length-1].cl0=cl}
+    for(const[row,c0,c1,side,sec,kind,cl]of CRQ().rh){const cells=[];for(let k=c0;k<=c1;k++)cells.push(gxc(k));addRack('h',gzc(row)+side*.04,cells,side,sec,kind,2,CW);racks[racks.length-1].cl0=cl}
+    G={mode:'croquis',halfW:GW()*CW/2,zWall:gz0(51),zBack:-.15,zFront:gz0(24),mainZ:gzc(CRQ().mainRow),docks:CRQ().docks.map(([a,b])=>(gx0(a)+gx0(b+1))/2)};
   }else{
     const rowGap=4.6,bay=2.8,rx=r=>(r-(c.rows-1)/2)*rowGap;
     for(let r=0;r<c.rows;r++){const cells=[];for(let b=0;b<c.bays;b++)cells.push(b*bay+bay/2);addRack('v',rx(r),cells,0,'A','rack',2,bay)}
     const zFront=c.bays*bay,hw=Math.max((c.rows-1)/2*rowGap+4.5,c.docks*5.2/2+2.5);
     G={mode:'param',halfW:hw,zWall:zFront+9,zBack:-4.15,zFront,mainZ:zFront+1.6,docks:Array.from({length:c.docks},(_,i)=>(i-(c.docks-1)/2)*5.2)};
   }
-  if(G.mode==='croquis')for(const r of racks)r.cl=r.sector==='A'?(r.line<gxc(17)?'HP':'SPX'):r.sector==='B'?(r.kind==='bin'?'GSK':'MOT'):r.sector==='C'?(r.line<gz0(25)?'COV':'MDT'):'GSK';
+  if(G.mode==='croquis')for(const r of racks)r.cl=r.cl0&&c.clients.some(k=>k.id===r.cl0)?r.cl0:r.sector==='A'?(r.line<gxc(17)?'HP':'SPX'):r.sector==='B'?(r.kind==='bin'?'GSK':'MOT'):r.sector==='C'?(r.line<gz0(25)?'COV':'MDT'):'GSK';
   else{const sh=cliShares(c);let acc=0,ci=0;racks.forEach((r,i)=>{const f=(i+.5)/racks.length;while(ci<sh.length-1&&f>acc+sh[ci]){acc+=sh[ci];ci++}r.cl=c.clients[ci].id})}
   for(const p of pos)p.cl=racks[p.ri].cl;
   G.racks=racks;G.pos=pos;G.n=pos.length;G.idx=idx;GEOMK=key;GEOM=G;return G;
@@ -769,7 +832,7 @@ const BPP=12;
 const rowX=r=>(r-(C.rows-1)/2)*4.6, dockX=i=>geom(C).docks[i]??0;
 function dims(){const g=geom(C),hw=g.halfW,zWall=g.zWall;return{zFront:g.zFront,zStage:g.zFront+3,zWall,zBack:g.zBack,mainZ:g.mainZ,halfW:hw,gx:hw+90,gz:zWall+26,fx0:-hw-95,fz0:-75,fz1:zWall+101}}
 function zoneRects(){const D=dims();
-  if(geom(C).mode==='croquis')return{recv:{x0:gx0(3)+.3,x1:gx0(6)-.3,z0:gz0(31)+.5,z1:D.zWall-1.6,c:0xcdbff3,t:'RECEPCIÓN'},disp:{x0:gx0(46)+.3,x1:gx0(53)-.4,z0:gz0(33)+.3,z1:gz0(43)-.2,c:0xd3e4f5,t:'PRE-DESPACHO'}};
+  if(geom(C).mode==='croquis'){const Q=CRQ(),a=Q.recv,b=Q.disp;return{recv:{x0:gx0(a[0])+.3,x1:gx0(a[2]+1)-.3,z0:gz0(a[1])+.5,z1:Math.min(gz0(a[3]+1)-.3,D.zWall-1.6),c:0xcdbff3,t:'RECEPCIÓN'},disp:{x0:gx0(b[0])+.3,x1:gx0(b[2]+1)-.4,z0:gz0(b[1])+.3,z1:gz0(b[3]+1)-.2,c:0xd3e4f5,t:'PRE-DESPACHO'}}}
   const ni=nIn(C),xm=C.docks>1?(dockX(ni-1)+dockX(ni))/2:0,z0=D.zFront+2.9,z1=D.zWall-1.7;
   return{recv:{x0:-D.halfW+.8,x1:xm-3.6,z0,z1,c:0xcdbff3,t:'RECEPCIÓN'},qc:{x0:xm-3.3,x1:xm-.35,z0,z1,c:0xbfe0f3,t:'CALIDAD'},
     pack:{x0:xm+.35,x1:xm+3.3,z0,z1,c:0xf5c6d3,t:'PACKING'},disp:{x0:xm+3.6,x1:D.halfW-.8,z0,z1,c:0xf6df8d,t:'CONSOLIDACIÓN'}}}
@@ -948,7 +1011,7 @@ function init3D(){
   buildLayout();
   el.addEventListener('pointermove',onHover);el.addEventListener('pointerleave',()=>{$('#tip').hidden=true});el.addEventListener('dblclick',onDbl);
 }
-function disposeTree(o){o.traverse(n=>{if(n.geometry&&!Object.values(G).includes(n.geometry))n.geometry.dispose();if(n.material&&n.material.map&&(n.isSprite||n.userData.own)){n.material.map.dispose();n.material.dispose()}})}
+function disposeTree(o){o.traverse(n=>{if(n.geometry&&!Object.values(G).includes(n.geometry))n.geometry.dispose();if(n.material&&(n.isSprite||n.userData.own)){for(const m of[].concat(n.material)){if(m&&m.map&&m.map.isTexture)m.map.dispose();if(m&&m.dispose)m.dispose()}}})}
 function buildLayout(){
   if(!scene)return;
   if(root){scene.remove(root);disposeTree(root)}
@@ -983,7 +1046,7 @@ function buildLayout(){
   const WH=1.5,wall=(x,z,sx,sz)=>{box(MAT.wall,[x,WH/2,z],[sx,WH,sz]);box(MAT.cap,[x,WH+.11,z],[sx+.04,.22,sz+.04])};
   const zb=D.zBack,flen=D.zWall-zb;
   wall(0,zb,fw+.6,.3);wall(-D.halfW-.15,(D.zWall+zb)/2,.3,flen);wall(D.halfW+.15,(D.zWall+zb)/2,.3,flen);
-  {const gaps=[];for(let i=0;i<C.docks;i++)gaps.push([dockX(i)-1.75,dockX(i)+1.75]);if(GM.mode==='croquis')for(const c of CROQUIS.pdoors)gaps.push([gxc(c)-.6,gxc(c)+.6]);gaps.sort((a,b)=>a[0]-b[0]);
+  {const gaps=[];for(let i=0;i<C.docks;i++)gaps.push([dockX(i)-1.75,dockX(i)+1.75]);if(GM.mode==='croquis')for(const c of CRQ().pdoors)gaps.push([gxc(c)-.6,gxc(c)+.6]);gaps.sort((a,b)=>a[0]-b[0]);
     let x=-D.halfW;for(const[g0,g1]of gaps){if(g0>x)wall((x+g0)/2,D.zWall,g0-x,.35);x=Math.max(x,g1)}if(x<D.halfW)wall((x+D.halfW)/2,D.zWall,D.halfW-x,.35)}
   // racks del layout
   buildRacks(GM,add);
@@ -1187,22 +1250,22 @@ function buildCroquisInterior(D,add,plane,box){
   const rect=(r,color,y,inset=0)=>plane(W(r)-inset*2,Lz(r)-inset*2,std({color,roughness:.92}),cx(r),y,cz(r));
   const lines=[],ln=(x,z,sx,sz,c)=>lines.push([x,z,sx,sz,c]);
   const outline=(r,c,t=.1)=>{ln(cx(r),r.z0+t/2,W(r),t,c);ln(cx(r),r.z1-t/2,W(r),t,c);ln(r.x0+t/2,cz(r),t,Lz(r),c);ln(r.x1-t/2,cz(r),t,Lz(r),c)};
-  for(const[t,c0,r0,c1,r1,col]of CROQUIS.areas){const r=R(c0,r0,c1,r1);rect(r,col,.01);outline(r,0xd9a77c,.08);root.add(floorText(t,cx(r),r.z1-1.2,Math.min(W(r)-1,t.length*.62),0,'rgba(80,60,40,.45)'))}
-  for(const[c0,r0,c1,r1]of CROQUIS.walks){const r=R(c0,r0,c1,r1);rect(r,0xcfe6cf,.013,.12);
+  for(const[t,c0,r0,c1,r1,col]of CRQ().areas){const r=R(c0,r0,c1,r1);rect(r,col,.01);outline(r,0xd9a77c,.08);root.add(floorText(t,cx(r),r.z1-1.2,Math.min(W(r)-1,t.length*.62),0,'rgba(80,60,40,.45)'))}
+  for(const[c0,r0,c1,r1]of CRQ().walks){const r=R(c0,r0,c1,r1);rect(r,0xcfe6cf,.013,.12);
     if(W(r)>Lz(r)){ln(cx(r),r.z0+.1,W(r),.12,0xf2c200);ln(cx(r),r.z1-.1,W(r),.12,0xf2c200)}else{ln(r.x0+.1,cz(r),.12,Lz(r),0xf2c200);ln(r.x1-.1,cz(r),.12,Lz(r),0xf2c200)}
-    if(Math.max(W(r),Lz(r))>14&&!(c0<=CART_PARK[2]&&c1>=CART_PARK[0]&&r0<=CART_PARK[3]&&r1>=CART_PARK[1]))root.add(floorText('SENDA PEATONAL',cx(r),cz(r),Math.min(9,Math.max(W(r),Lz(r))*.5),W(r)>Lz(r)?0:Math.PI/2,'rgba(30,90,40,.5)'))}
+    if(Math.max(W(r),Lz(r))>14&&!(c0<=CRQ().cart[2]&&c1>=CRQ().cart[0]&&r0<=CRQ().cart[3]&&r1>=CRQ().cart[1]))root.add(floorText('SENDA PEATONAL',cx(r),cz(r),Math.min(9,Math.max(W(r),Lz(r))*.5),W(r)>Lz(r)?0:Math.PI/2,'rgba(30,90,40,.5)'))}
   root.add(floorText('PASILLO PRINCIPAL',gxc(16),GEOM.mainZ,12,0,'rgba(25,40,58,.45)'));
-  {const[c0,r0,c1,r1]=CART_PARK,r=R(c0,r0,c1,r1);rect(r,0xe3e8ef,.014,.06);outline(r,0x5b6b7c,.08);root.add(floorText('ESTACIONAMIENTO DE CARROS',cx(r),cz(r),Math.min(W(r)-2,13),0,'rgba(40,55,75,.5)'))}
+  {const[c0,r0,c1,r1]=CRQ().cart,r=R(c0,r0,c1,r1);rect(r,0xe3e8ef,.014,.06);outline(r,0x5b6b7c,.08);root.add(floorText('ESTACIONAMIENTO DE CARROS',cx(r),cz(r),Math.min(W(r)-2,13),0,'rgba(40,55,75,.5)'))}
   const ni=nIn(C);
-  CROQUIS.docks.forEach(([c0,c1,r0],i)=>{const r=R(c0,r0,c1,50),d=C.dockCfg[i]||{use:'off',cl:[]},uc=DOCK_COL[d.use];rect(r,uc[0],.011,.05);outline(r,uc[1],.14);
+  CRQ().docks.forEach(([c0,c1,r0],i)=>{const r=R(c0,r0,c1,50),d=C.dockCfg[i]||{use:'off',cl:[]},uc=DOCK_COL[d.use];rect(r,uc[0],.011,.05);outline(r,uc[1],.14);
     root.add(floorText('MUELLE '+(i+1)+' · '+USE_LBL[d.use].toUpperCase()+(d.cl.length&&d.use!=='off'?' · '+d.cl.map(cliName).join(' / ').toUpperCase():''),cx(r),cz(r)+1,Math.min(Lz(r)-2,14),Math.PI/2,uc[2]))});
-  for(const k of C.clients){const z=CZONE[k.id];if(!z)continue;const r=R(...z),hx=cliHex(k.id);
+  for(const k of C.clients){const z=CRQ().zones[k.id];if(!z)continue;const r=R(...z),hx=cliHex(k.id);
     const m=plane(W(r)-.3,Lz(r)-.3,new THREE.MeshStandardMaterial({color:hx,transparent:true,opacity:.28,roughness:.9,depthWrite:false}),cx(r),.017,cz(r));m.renderOrder=1;CLZ.push({cl:k.id,m});outline(r,k.col,.12);
     root.add(floorText('ZONA '+k.n.toUpperCase(),cx(r),cz(r),Math.min(W(r)-.6,Lz(r)>W(r)*1.6?Lz(r)-1:W(r)-.6,12),Lz(r)>W(r)*1.6?Math.PI/2:0,'rgba(20,30,45,.55)'));
     const sp=makeLabel(k.n.toUpperCase(),'PREPARACIÓN Y ARMADO',5.6);sp.userData.cl=k.id;sp.position.set(cx(r),4.2,cz(r));labelsG.add(sp)}
   if(lines.length){const lm=new THREE.InstancedMesh(BOX,MAT.vc2,lines.length),c3=new THREE.Color();lines.forEach(([x,z,sx,sz,c],k)=>{dummy.rotation.set(0,0,0);dummy.position.set(x,.02,z);dummy.scale.set(sx,.012,sz);dummy.updateMatrix();lm.setMatrixAt(k,dummy.matrix);lm.setColorAt(k,c3.setHex(c))});root.add(lm)}
   // pared interior (columna AE negra en el croquis)
-  for(const[c0,r0,c1,r1]of CROQUIS.walls){const r=R(c0,r0,c1,r1);box(MAT.wall,[cx(r),2,cz(r)],[.3,4,Lz(r)]);box(MAT.cap,[cx(r),4.1,cz(r)],[.34,.2,Lz(r)+.04])}
+  for(const[c0,r0,c1,r1]of CRQ().walls){const r=R(c0,r0,c1,r1);box(MAT.wall,[cx(r),2,cz(r)],[.3,4,Lz(r)]);box(MAT.cap,[cx(r),4.1,cz(r)],[.34,.2,Lz(r)+.04])}
   // salas: piso, tabiques con puerta y mobiliario
   const FUR=[],T=(c,p,s)=>FUR.push(B(c,p,s));
   const desk=(x,z)=>{T(0xe8e2d6,[x,.74,z],[1.3,.05,.7]);for(const dx of[-.6,.6])for(const dz of[-.3,.3])T(0x6b737c,[x+dx,.37,z+dz],[.05,.72,.05]);T(0x1f2329,[x,1.02,z-.22],[.56,.34,.04]);T(0x1f2329,[x,.84,z-.22],[.06,.18,.06]);
@@ -1214,7 +1277,7 @@ function buildCroquisInterior(D,add,plane,box){
   const sdesk=(x,z)=>{T(0xe8e2d6,[x,.72,z],[.9,.04,.5]);T(0x6b737c,[x,.36,z],[.06,.7,.06]);T(0x2f3a48,[x,.45,z+.45],[.42,.06,.42])};
   const grid=(r,sx,sz,fn,m=.6)=>{const nx=Math.max(1,Math.floor((W(r)-m*2)/sx)),nz=Math.max(1,Math.floor((Lz(r)-m*2)/sz)),ox=cx(r)-(nx-1)*sx/2,oz=cz(r)-(nz-1)*sz/2;for(let i=0;i<nx;i++)for(let j=0;j<nz;j++)fn(ox+i*sx,oz+j*sz)};
   const PH=2.6,part=[];
-  for(const[name,c0,r0,c1,r1,kind]of CROQUIS.rooms){const r=R(c0,r0,c1,r1);
+  for(const[name,c0,r0,c1,r1,kind]of CRQ().rooms){const r=R(c0,r0,c1,r1);
     rect(r,{office:0xe4e9f0,locker:0xe9ecef,dining:0xf0e7da,training:0xe7eef2,work:0xeceae4,cage:0xe8e8e8}[kind]||0xe9ecef,.012);
     const front=Math.abs(r.z1-D.zWall)<.5,dz=front?r.z0:r.z1,gap=1.3;
     const edges=[[r.x0,r.z0,r.x1,r.z0],[r.x0,r.z1,r.x1,r.z1],[r.x0,r.z0,r.x0,r.z1],[r.x1,r.z0,r.x1,r.z1]];
@@ -1227,14 +1290,14 @@ function buildCroquisInterior(D,add,plane,box){
     else if(kind==='work')grid(r,2.4,1.8,(x,z)=>wtable(x,z,true),.9);
     else if(kind==='cage'){const k=r;for(let x=k.x0+.8;x<k.x1-.6;x+=1.3)for(let z=k.z0+.9;z<k.z1-.6;z+=1.4)FUR.push(part0(x,z))}
     const sp=makeLabel(name.toUpperCase(),{office:'OFICINA',locker:'VESTUARIO',dining:'COMEDOR',training:'CAPACITACIÓN',work:'ÁREA DE TRABAJO',cage:'SECTOR DE CLIENTE'}[kind],Math.min(6.5,Math.max(4,W(r)*1.1)));sp.position.set(cx(r),3.6,cz(r));labelsG.add(sp)}
-  for(const[t,c0,r0,c1,r1]of CROQUIS.tables){const r=R(c0,r0,c1,r1);for(let z=r.z0+1;z<r.z1-.6;z+=1.6)wtable(cx(r),z,false);
+  for(const[t,c0,r0,c1,r1]of CRQ().tables){const r=R(c0,r0,c1,r1);for(let z=r.z0+1;z<r.z1-.6;z+=1.6)wtable(cx(r),z,false);
     const sp=makeLabel(t.toUpperCase(),'MESAS',4.6);sp.position.set(cx(r),3.2,cz(r));labelsG.add(sp)}
   if(FUR.length){const fm=new THREE.Mesh(merge(FUR),MAT.vc);fm.castShadow=true;fm.receiveShadow=true;root.add(fm)}
   const pm=new THREE.InstancedMesh(BOX,MAT.part,part.length*2);part.forEach(([x0,z0,x1,z1],k)=>{const L=Math.hypot(x1-x0,z1-z0);if(L<.05){pm.setMatrixAt(k*2,ZM);pm.setMatrixAt(k*2+1,ZM);return}
     dummy.rotation.set(0,0,0);dummy.position.set((x0+x1)/2,PH/2,(z0+z1)/2);dummy.scale.set(z0===z1?L:.12,PH,z0===z1?.12:L);dummy.updateMatrix();pm.setMatrixAt(k*2,dummy.matrix);
     dummy.position.y=PH+.04;dummy.scale.y=.08;dummy.scale.x+=.02;dummy.scale.z+=.02;dummy.updateMatrix();pm.setMatrixAt(k*2+1,dummy.matrix)});
   pm.castShadow=true;pm.receiveShadow=true;root.add(pm);
-  {const r=R(29,17,30,23),mm=new THREE.InstancedMesh(BOX,MAT.mesh,4),e=[[cx(r),r.z0,W(r),.04],[cx(r),r.z1,W(r),.04],[r.x0,cz(r),.04,Lz(r)],[r.x1,cz(r),.04,Lz(r)]];e.forEach(([x,z,sx,sz],k)=>{dummy.rotation.set(0,0,0);dummy.position.set(x,1.3,z);dummy.scale.set(sx,2.6,sz);dummy.updateMatrix();mm.setMatrixAt(k,dummy.matrix)});root.add(mm)}
+  for(const q of CRQ().rooms.filter(q=>q[5]==='cage')){const r=R(q[1],q[2],q[3],q[4]),mm=new THREE.InstancedMesh(BOX,MAT.mesh,4),e=[[cx(r),r.z0,W(r),.04],[cx(r),r.z1,W(r),.04],[r.x0,cz(r),.04,Lz(r)],[r.x1,cz(r),.04,Lz(r)]];e.forEach(([x,z,sx,sz],k)=>{dummy.rotation.set(0,0,0);dummy.position.set(x,1.3,z);dummy.scale.set(sx,2.6,sz);dummy.updateMatrix();mm.setMatrixAt(k,dummy.matrix)});root.add(mm)}
 }
 const part0=(x,z)=>B(0xc59a5e,[x,.4,z],[1,.8,1.1]);
 const DOCK_COL={in:[0xe6dff8,0x7a56d6,'rgba(90,60,170,.65)'],out:[0xdde8fa,0x1f5fd6,'rgba(25,80,190,.65)'],both:[0xd8f0ea,0x13a08a,'rgba(10,110,90,.7)'],off:[0xeceff1,0x9aa3ab,'rgba(90,100,110,.6)']};
@@ -1264,16 +1327,16 @@ function navGrid(){
     if(r.o==='v')fill(solid,r.line-.64,r.line+.64,a0-e,a1+e);else fill(solid,a0-e,a1+e,r.line-.64,r.line+.64)}
   if(GM.mode==='croquis'){
     const R=(c0,r0,c1,r1)=>({x0:gx0(c0),x1:gx0(c1+1),z0:gz0(r0),z1:gz0(r1+1)});
-    for(const[c0,r0,c1,r1]of CROQUIS.walls){const r=R(c0,r0,c1,r1),cx=(r.x0+r.x1)/2;fill(solid,cx-.17,cx+.17,r.z0,r.z1)}
-    for(const[name,c0,r0,c1,r1,kind]of CROQUIS.rooms){const r=R(c0,r0,c1,r1),front=Math.abs(r.z1-D.zWall)<.5,dz=front?r.z0:r.z1,gap=1.3,m=(r.x0+r.x1)/2;
+    for(const[c0,r0,c1,r1]of CRQ().walls){const r=R(c0,r0,c1,r1),cx=(r.x0+r.x1)/2;fill(solid,cx-.17,cx+.17,r.z0,r.z1)}
+    for(const[name,c0,r0,c1,r1,kind]of CRQ().rooms){const r=R(c0,r0,c1,r1),front=Math.abs(r.z1-D.zWall)<.5,dz=front?r.z0:r.z1,gap=1.3,m=(r.x0+r.x1)/2;
       fill(fkNo,r.x0,r.x1,r.z0,r.z1);
       for(const z of[r.z0,r.z1]){if(Math.abs(z-D.zWall)<.5)continue;if(kind!=='cage'&&Math.abs(z-dz)<.01){fill(solid,r.x0,m-gap/2,z-.06,z+.06);fill(solid,m+gap/2,r.x1,z-.06,z+.06)}else fill(solid,r.x0,r.x1,z-.06,z+.06)}
       for(const x of[r.x0,r.x1])fill(solid,x-.06,x+.06,r.z0,Math.min(r.z1,D.zWall))}
-    for(const[t,c0,r0,c1,r1]of CROQUIS.tables){const r=R(c0,r0,c1,r1),cx=(r.x0+r.x1)/2;for(let z=r.z0+1;z<r.z1-.6;z+=1.6)fill(solid,cx-.95,cx+.95,z-.45,z+.45)}
-    {const r=R(...CART_PARK);fill(fkNo,r.x0-.5,r.x1+.5,r.z0-.2,r.z1+.3)}
+    for(const[t,c0,r0,c1,r1]of CRQ().tables){const r=R(c0,r0,c1,r1),cx=(r.x0+r.x1)/2;for(let z=r.z0+1;z<r.z1-.6;z+=1.6)fill(solid,cx-.95,cx+.95,z-.45,z+.45)}
+    {const r=R(...CRQ().cart);fill(fkNo,r.x0-.5,r.x1+.5,r.z0-.2,r.z1+.3)}
     // la senda peatonal frente a vestuarios y comedor es sólo para personas; el resto de las sendas se pueden cruzar
-    {const r=R(13,27,31,28);fill(fkNo,r.x0,r.x1,r.z0-.15,r.z1)}
-    for(const[c0,r0,c1,r1]of CROQUIS.walks){const r=R(c0,r0,c1,r1);fill(walk,r.x0,r.x1,r.z0,r.z1)}
+    for(const w of CRQ().pwalk||[]){const r=R(...w);fill(fkNo,r.x0,r.x1,r.z0-.15,r.z1)}
+    for(const[c0,r0,c1,r1]of CRQ().walks){const r=R(c0,r0,c1,r1);fill(walk,r.x0,r.x1,r.z0,r.z1)}
   }
   // distancia (m) al obstáculo más cercano: chamfer 3-4
   const dist=new Float32Array(n);for(let k=0;k<n;k++)dist[k]=solid[k]?0:1e9;const a=res,b=res*1.4142;
@@ -1330,7 +1393,7 @@ function rackFace(GM,r,j,kind){const a=r.cells[j];if(GM.mode!=='croquis'){const 
   const face=-(r.side||1),off=kind==='fk'?1.5:1.3;return r.o==='v'?{x:r.line+face*off,z:a}:{x:a,z:r.line+face*1.15}}
 // lugar de cada carro en el estacionamiento: el operario se para en el pasillo y el carro queda dentro de la franja
 function cartStand(k){const GM=geom(C),D=dims();
-  if(GM.mode==='croquis'){const x0=gx0(CART_PARK[0])+.7,x1=gx0(CART_PARK[2]+1)-.7,n=Math.max(1,Math.floor((x1-x0)/1.05)+1);return{x:x0+(k%n)*1.05,z:gz0(CART_PARK[1])-.78}}
+  if(GM.mode==='croquis'){const x0=gx0(CRQ().cart[0])+.7,x1=gx0(CRQ().cart[2]+1)-.7,n=Math.max(1,Math.floor((x1-x0)/1.05)+1);return{x:x0+(k%n)*1.05,z:gz0(CRQ().cart[1])-.78}}
   return{x:-D.halfW+1.5+k*1.05,z:D.zBack+.5}}
 // pasillo de racks en el que está un punto (-1 si no está en ninguno)
 function aisleOf(x,z){if(!AISLES||!AISLES.length)return-1;for(let k=0;k<AISLES.length;k++){const q=AISLES[k],u=q.o==='v'?x:z,w=q.o==='v'?z:x;if(Math.abs(u-q.c)<1.75&&w>q.a0-.6&&w<q.a1+.6)return k}return-1}
@@ -1342,7 +1405,7 @@ function busyAisles(forKind){const B=new Set(),add=(x,z)=>{const k=aisleOf(x,z);
 function freeSlot(a){if(a.slot>=0)return a.slot;const used=new Set(agents.filter(o=>o!==a&&o.slot>=0).map(o=>o.slot));let k=0;while(used.has(k))k++;return a.slot=k}
 function rndClient(){const sh=cliShares(C);let tot=0;const w=C.clients.map((k,i)=>{const v=inCF(k.id)?sh[i]:0;tot+=v;return v});if(!(tot>0)){const ids=cfIds();return ids[Math.floor(Math.random()*ids.length)]}let r=Math.random()*tot,i=0;for(;i<w.length-1;i++){if(w[i]>0&&r<w[i])break;r-=w[i]}return inCF(C.clients[i].id)?C.clients[i].id:cfIds()[0]}
 function breakRoom(kind){const GM=geom(C),D=dims();
-  if(GM.mode==='croquis'){const pick=kind==='lunch'?['Comedor']:['Vestuario masculino','Vestuario femenino'],rs=CROQUIS.rooms.filter(r=>pick.includes(r[0]));const r=rs[Math.floor(Math.random()*rs.length)];
+  if(GM.mode==='croquis'){const rs=CRQ().rooms.filter(r=>r[5]===(kind==='lunch'?'dining':'locker'));const r=rs[Math.floor(Math.random()*rs.length)];
     if(r){const x0=gx0(r[1])+.8,x1=gx0(r[3]+1)-.8,z0=gz0(r[2])+.8,z1=gz0(r[4]+1)-.8;return[x0+Math.random()*(x1-x0),z0+Math.random()*(z1-z0)]}}
   return[(kind==='lunch'?-1:1)*D.halfW*.7+(Math.random()-.5)*4,D.zBack+2+Math.random()*3]}
 function newPath(a){
@@ -1835,7 +1898,7 @@ function renderConfig(){
     ${sw('slot','Slotting ABC (clase A cerca de muelles)',C.slotting)}
     <p class="note" id="capNote"></p></section>
   <section class="grp"><h3>Layout del depósito</h3><div class="row"><label for="layoutSel">Tipo de layout</label><select id="layoutSel"><option value="croquis">Croquis del depósito</option><option value="param">Paramétrico (filas × posiciones)</option></select></div>${(C.layout==='param'?['rows','bays']:[]).map(k=>stepper(k)).join('')}${['levels','cap'].map(k=>stepper(k)).join('')}
-    <p class="note" id="layoutNote"></p></section>
+    <p class="note" id="layoutNote"></p><div class="btns"><button class="btn sm primary" data-led="1"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9M15 3v6"/></svg>Editar layout: racks, muelles, zonas y módulos</button></div></section>
   <section class="grp"><h3>Muelles y recepción</h3>${C.layout==='param'?stepper('docks')+stepper('inDocks'):''}
     <p class="note" id="dockNote"></p><div class="btns"><button class="btn sm" data-goto="cli">Asignar muelles por cliente</button></div>
     ${stepper('recvPal')}${stepper('unloadBase')}${stepper('load')}</section>
@@ -1894,7 +1957,7 @@ $('#tab-config').addEventListener('click',e=>{
   const dp=e.target.closest('[data-dpre]');if(dp){const k=dp.dataset.dpre;C.days.forEach((d,i)=>{d.on=i<5||k==='all'||(k==='ls'&&i===5)?1:0});shiftsChanged(daysSummary());return}
   const b=e.target.closest('.stp-ctl button');if(b){const k=b.parentElement.dataset.k;applyChange(k,getV(k)+(+b.dataset.d)*STEPS[k][3]);return}
   const n=e.target.closest('#nShifts button');if(n){C.nShifts=+n.dataset.n;shiftsChanged(`${C.nShifts} ${C.nShifts===1?'turno activo':'turnos activos'}. ${hoursSummary()}.`);return}
-  if(e.target.id==='resetCfg'){const keep={site:C.site};Object.assign(C,JSON.parse(JSON.stringify(DEFAULTS)),keep);S=freshState(C);SNAPS.clear();snap();camFitted=false;buildLayout();renderConfig();updateUI(true);toast('Configuración inicial restaurada.')}
+  if(e.target.id==='resetCfg'){const keep={site:C.site};Object.assign(C,JSON.parse(JSON.stringify(DEFAULTS)),keep);delete C.croq;C.dockCfg=CROQ_DOCKS0();S=freshState(C);SNAPS.clear();snap();camFitted=false;buildLayout();renderConfig();updateUI(true);toast('Configuración inicial restaurada.')}
 });
 $('#tab-config').addEventListener('input',e=>{const t=e.target;
   if(t.id==='peak'){C.peak=+t.value;invalidateFuture();refreshConfigVals();updateUI(true)}
@@ -1907,7 +1970,7 @@ $('#tab-config').addEventListener('change',e=>{const t=e.target;
   if(t.id==='horCfg'){setHorizon(t.value);return}
   if(t.dataset.sn!=null){C.shifts[+t.dataset.sn].n=t.value.trim()||('Turno '+(+t.dataset.sn+1));shiftsChanged();return}
   if(t.dataset.ss!=null||t.dataset.se!=null){const i=+(t.dataset.ss??t.dataset.se),v=parseHM(t.value);if(v==null)return;C.shifts[i][t.dataset.ss!=null?'s':'e']=v;shiftsChanged(`Turno ${C.shifts[i].n.toLowerCase()}: ${hm(C.shifts[i].s)} a ${hm(C.shifts[i].e)}.`);return}
-  if(t.id==='layoutSel'){C.layout=t.value;if(C.layout==='croquis'){C.docks=CROQUIS.docks.length;C.dockCfg=CROQ_DOCKS()}else{C.docks=4;C.inDocks=2;C.dockCfg=defaultDockCfg(C)}IMP=null;S=freshState(C);SNAPS.clear();snap();camFitted=false;buildLayout();renderConfig();updateUI(true);
+  if(t.id==='layoutSel'){if(C.croq&&C.layout!=='param')C.croq.dockCfg=JSON.parse(JSON.stringify(C.dockCfg.slice(0,C.docks)));C.layout=t.value;if(C.layout==='croquis'){C.docks=CRQ().docks.length;C.dockCfg=CROQ_DOCKS()}else{C.docks=4;C.inDocks=2;C.dockCfg=defaultDockCfg(C)}IMP=null;S=freshState(C);SNAPS.clear();snap();camFitted=false;buildLayout();renderConfig();updateUI(true);
     toast(C.layout==='croquis'?'Layout del croquis cargado: '+nPos(C).toLocaleString('es-AR')+' posiciones y '+C.docks+' muelles.':'Layout paramétrico: ajustá filas, posiciones y muelles.');return}
   if(t.id==='brkOn'||t.id.startsWith('brk')){const b=C.brk;if(t.id==='brkOn')b.on=t.checked;else b[{brkLunch:'lunch',brkGroups:'groups',brkAfter:'after',brkWc:'wc',brkWcMin:'wcMin'}[t.id]]=+t.value;invalidateFuture();toast(b.on?brkText():'Descansos desactivados: los operarios trabajan todo el turno sin pausas.')}
   else if(t.id==='seq'){C.seq=t.value;invalidateFuture()}
@@ -2459,11 +2522,11 @@ $('#tab-cli').addEventListener('change',e=>{const t=e.target;
   if(t.dataset.ci!=null){C.clients[+t.dataset.ci].inDay=Math.max(0,+t.value||0);invalidateFuture();renderCli();updateUI(true);return}
   if(t.dataset.du!=null){C.dockCfg[+t.dataset.du].use=t.value;invalidateFuture();buildLayout();renderCli();updateUI(true);toast(`Muelle ${+t.dataset.du+1}: ${USE_LBL[t.value].toLowerCase()}.`)}});
 $('#tab-cli').addEventListener('click',e=>{const b=e.target.closest('[data-dk]');if(b){const d=C.dockCfg[+b.dataset.dk],id=b.dataset.cl,i=d.cl.indexOf(id);if(i>=0)d.cl.splice(i,1);else d.cl.push(id);invalidateFuture();buildLayout();renderCli();updateUI(true);return}
-  if(e.target.id==='dockReset'){C.dockCfg=CROQ_DOCKS();invalidateFuture();buildLayout();renderCli();updateUI(true);toast('Muelles restaurados: 1 y 2 recepción de Cliente 1, 2 y 4; 3 recepción de Cliente 3; 4 a 6 despacho; 7 y 8 Cliente 5 y 6.')}});
+  if(e.target.id==='dockReset'){C.dockCfg=CROQ_DOCKS();invalidateFuture();buildLayout();renderCli();updateUI(true);toast(C.croq?'Muelles restaurados como quedaron en el editor de layout.':'Muelles restaurados: 1 y 2 recepción de Cliente 1, 2 y 4; 3 recepción de Cliente 3; 4 a 6 despacho; 7 y 8 Cliente 5 y 6.')}});
 /* zonas de preparación por cliente */
-const CZONE={HP:[41,14,43,42],SPX:[29,17,30,23],MOT:[32,26,39,28],GSK:[35,18,40,19],COV:[46,33,49,42],MDT:[50,33,52,42]};
+
 function clientZone(id){
-  if(geom(C).mode==='croquis'){const z=CZONE[id];if(z)return{x0:gx0(z[0])+.2,x1:gx0(z[2]+1)-.2,z0:gz0(z[1])+.2,z1:gz0(z[3]+1)-.2}}
+  if(geom(C).mode==='croquis'){const z=CRQ().zones[id];if(z)return{x0:gx0(z[0])+.2,x1:gx0(z[2]+1)-.2,z0:gz0(z[1])+.2,z1:gz0(z[3]+1)-.2}}
   const d=zoneRects().disp,ids=CLI_IDS(),i=Math.max(0,ids.indexOf(id)),w=(d.x1-d.x0)/ids.length;return{x0:d.x0+i*w,x1:d.x0+(i+1)*w,z0:d.z0,z1:d.z1}}
 const matchClient=s=>{const v=norm(s);if(!v)return null;for(const k of C.clients){const a=norm(k.n),b=norm(k.id);if(v===a||v===b||v.includes(a)||(b.length>2&&v.startsWith(b)))return k.id}
   return null};
@@ -2697,6 +2760,7 @@ function updateUI(force){
   drawTL();
 }
 let last=performance.now(),acc=0,lastUI=0;
+const LEDEL={get hidden(){const e=document.getElementById('led');return!e||e.hidden}};
 function loop(now){
   const dt=Math.min(.1,(now-last)/1000);last=now;
   if(playing&&S.t<S.end){acc+=dt*speed;let n=0;while(acc>=1&&n<240){step(S,C);acc--;n++;if(S.t%SNAPI()===0)snap();if(S.t>=S.end){playing=false;setPlayUI();toast(C.horizon==='semana'?'Fin de la semana simulada. Revisá el resultado en la línea de tiempo.':'Fin del día simulado. Revisá el resultado en la línea de tiempo o compará escenarios.');break}}if(n)dirty=true}
@@ -2705,17 +2769,252 @@ function loop(now){
   animateScene(dt,now);stepCamera(now);
   if(dirty)updateScene();
   {const simT=S.t+(playing&&S.t<S.end?Math.min(acc,.999):0);updateVehicles(simT);updateSky(simT)}
-  controls.update();renderer.render(scene,camera);recFrame();if(REC&&recOpt.hud)recEncode();updatePins();
+  controls.update();if(LEDEL.hidden)renderer.render(scene,camera);recFrame();if(REC&&recOpt.hud)recEncode();updatePins();
   if(now-lastUI>250){lastUI=now;updateUI(false)}
   requestAnimationFrame(loop);
 }
+
+/* ---------------- Editor de layout: croquis editable ---------------- */
+// Grilla: columnas 2..W+1 (2,0 m cada una) y filas 2..50 (1,22 m cada una). La pared de muelles está en la fila 51.
+const MOD_COLS=13,ROW1=50,SECS='ABCDEFGHIJKL'.split('');
+function croqOk(q){return!!(q&&Array.isArray(q.rv)&&Array.isArray(q.rh)&&Array.isArray(q.docks)&&q.docks.length&&Array.isArray(q.rooms)&&q.W>0)}
+function croqNorm(src){const q=JSON.parse(JSON.stringify(src));q.W=q.W||51;q.cart=q.cart||[14,28,28,28];q.pwalk=q.pwalk||[];q.zones=q.zones||{};
+  q.recv=q.recv||[3,31,5,50];q.disp=q.disp||[46,33,52,42];q.pdoors=q.pdoors||[];q.mainRow=q.mainRow||25;
+  for(const k of['rv','rh','rooms','tables','areas','walks','docks','walls'])q[k]=Array.isArray(q[k])?q[k]:[];
+  const ids=CLI_IDS(),ok=v=>ids.includes(v)?v:null;
+  q.rv.forEach(e=>{e[5]=e[5]||null;e[6]=ok(e[6])||ok(e[4]==='A'?(e[0]<17?'HP':'SPX'):e[4]==='B'?(e[5]==='bin'?'GSK':'MOT'):'GSK')||ids[0]});
+  q.rh.forEach(e=>{e[5]=e[5]||null;e[6]=ok(e[6])||ok(e[4]==='C'?(e[0]<25?'COV':'MDT'):'GSK')||ids[0]});
+  delete q.dockCfg;delete q.rev;return q}
+const LED={E:null,cfg:[],hist:[],tool:'sel',sel:null,drag:null,cl:null,sec:'E',kind:'rack',mod:true,lev:4,sw:10,sh:6,ox:0,oy:0,dirty:false};
+const LT={rv:'Rack vertical',rh:'Rack horizontal',rooms:'Sala u oficina',tables:'Mesas de preparación',areas:'Área pintada',walks:'Senda peatonal',docks:'Muelle',walls:'Pared interior',zone:'Zona de preparación',recv:'Zona de recepción',disp:'Zona de pre-despacho',cart:'Estacionamiento de carros'};
+const ROOMK={office:'Oficina',locker:'Vestuario (baño)',dining:'Comedor',training:'Capacitación',work:'Área de trabajo',cage:'Sector de cliente (jaula)'};
+const LED_TOOLS=[['sel','Seleccionar y mover','#66737f'],['rackV2','Rack doble vertical','#f47a1f'],['rackV1','Rack simple vertical','#f8b27a'],['rackH2','Rack doble horizontal','#f47a1f'],['rackH1','Rack simple horizontal','#f8b27a'],
+  ['dock','Muelle','#1f5fd6'],['zone','Zona de preparación','#13a08a'],['table','Mesas de preparación','#b08a5a'],['area','Área pintada','#f6dcc8'],['room','Sala u oficina','#9aa6b2'],['walk','Senda peatonal','#8cc98c'],
+  ['recv','Zona de recepción','#a58ae6'],['disp','Zona de pre-despacho','#8db6ea'],['erase','Borrar','#d63f3f']];
+const LED_HINT={sel:'Tocá un elemento para ver y cambiar sus datos. Arrastralo para moverlo. Supr borra el elemento elegido.',
+  rackV2:'Arrastrá hacia abajo sobre una columna: se arman dos racks espalda con espalda (ocupan 2 columnas). Dejá 1 columna libre entre pares para el pasillo.',
+  rackV1:'Arrastrá hacia abajo sobre una columna para un rack simple, por ejemplo contra la pared. El frente mira hacia la columna libre.',
+  rackH2:'Arrastrá de izquierda a derecha sobre una fila: se arman dos racks espalda con espalda (ocupan 2 filas).',
+  rackH1:'Arrastrá de izquierda a derecha sobre una fila para un rack simple horizontal.',
+  dock:'Tocá cerca de la pared de abajo para agregar un muelle (portón de 4 m). Si arrastrás hacia arriba, marcás hasta dónde llega el andén.',
+  zone:'Elegí el cliente y dibujá un rectángulo: es donde los operarios arman y consolidan sus pedidos. Reemplaza la zona anterior de ese cliente.',
+  table:'Dibujá un rectángulo con las mesas de preparación o cerrado de pedidos.',area:'Dibujá un rectángulo para pintar un área en el piso (por ejemplo, preparación y cerrado).',
+  room:'Dibujá un rectángulo para una sala: oficina, vestuario, comedor o capacitación. Después elegí el tipo a la derecha.',
+  walk:'Dibujá una senda peatonal. Los operarios la prefieren y los autoelevadores la evitan.',recv:'Dibujá dónde se dejan los pallets recibidos. Reemplaza la zona actual.',
+  disp:'Dibujá dónde se consolidan los pedidos antes de cargar. Reemplaza la zona actual.',erase:'Tocá el elemento que quieras borrar.'};
+const ledClone=o=>JSON.parse(JSON.stringify(o));
+function ledPush(){LED.hist.push(ledClone({E:LED.E,cfg:LED.cfg}));if(LED.hist.length>60)LED.hist.shift();LED.dirty=true}
+function ledUndo(){const h=LED.hist.pop();if(!h)return toast('No hay cambios para deshacer.');LED.E=h.E;LED.cfg=h.cfg;LED.sel=null;ledDraw();ledSide()}
+function ledRect(t,e){switch(t){case'rv':return[e[0],e[1],e[0],e[2]];case'rh':return[e[1],e[0],e[2],e[0]];case'rooms':case'tables':case'areas':return[e[1],e[2],e[3],e[4]];
+  case'docks':return[e[0],e[2],e[1],ROW1];default:return[e[0],e[1],e[2],e[3]]}}
+function ledSetRect(t,e,[c0,r0,c1,r1]){switch(t){case'rv':e[0]=c0;e[1]=r0;e[2]=r1;break;case'rh':e[0]=r0;e[1]=c0;e[2]=c1;break;case'rooms':case'tables':case'areas':e[1]=c0;e[2]=r0;e[3]=c1;e[4]=r1;break;
+  case'docks':e[0]=c0;e[1]=c1;e[2]=r0;break;default:e[0]=c0;e[1]=r0;e[2]=c1;e[3]=r1}}
+function ledItems(){const E=LED.E,L=[],add=(t,arr)=>arr.forEach((e,i)=>L.push({t,i,e}));
+  add('rv',E.rv);add('rh',E.rh);add('docks',E.docks);add('tables',E.tables);add('walls',E.walls);add('rooms',E.rooms);
+  for(const k of Object.keys(E.zones))L.push({t:'zone',k,e:E.zones[k]});L.push({t:'recv',e:E.recv},{t:'disp',e:E.disp},{t:'cart',e:E.cart});add('walks',E.walks);add('areas',E.areas);return L}
+const ledGet=s=>s?s.t==='zone'?LED.E.zones[s.k]:['recv','disp','cart'].includes(s.t)?LED.E[s.t]:(LED.E[s.t]||[])[s.i]:null;
+const SOLID=['rv','rh','rooms','tables','walls'];
+const ovl=(a,b)=>a[0]<=b[2]&&b[0]<=a[2]&&a[1]<=b[3]&&b[1]<=a[3];
+function ledClash(t,rect,self){if(!SOLID.includes(t))return null;if(t==='rv'||t==='rh'){const d=LED.E.docks.findIndex(d=>d!==self&&ovl(rect,ledRect('docks',d)));if(d>=0)return{t:'docks',i:d,e:LED.E.docks[d]}}for(const it of ledItems()){if(!SOLID.includes(it.t)||it.e===self)continue;if(ovl(rect,ledRect(it.t,it.e)))return it}return null}
+function ledDockClash(c0,c1,self){return LED.E.docks.find(d=>d!==self&&c0<=d[1]+1&&c1>=d[0]-1)}
+const inB=([c0,r0,c1,r1])=>c0>=2&&r0>=2&&c1<=LED.E.W+1&&r1<=ROW1&&c0<=c1&&r0<=r1;
+const itName=it=>it.t==='zone'?'la zona de '+cliName(it.k):it.t==='rooms'?'la sala '+it.e[0]:it.t==='tables'?'las mesas '+it.e[0]:it.t==='docks'?'el muelle '+(it.i+1):it.t==='rv'||it.t==='rh'?'el rack '+(it.i+1)+' ('+(it.t==='rv'?'vertical':'horizontal')+')':LT[it.t].toLowerCase();
+function ledHit(c,r){if(r>ROW1){const i=LED.E.docks.findIndex(d=>c>=d[0]&&c<=d[1]);return i>=0?{t:'docks',i,e:LED.E.docks[i]}:null}
+  for(const it of ledItems()){const[a,b,cc,d]=ledRect(it.t,it.e);if(c>=a&&c<=cc&&r>=b&&r<=d)return it}return null}
+function ledPos(){const E=LED.E;let n=0;for(const e of E.rv)n+=(e[2]-e[1]+1);for(const e of E.rh)n+=(e[2]-e[1]+1)*2;return n*LED.lev}
+function ledCounts(){const E=LED.E;return{pos:ledPos(),racks:E.rv.length+E.rh.length,docks:E.docks.length,zones:Object.keys(E.zones).length,w:E.W*CW,d:(ROW1-1)*RH}}
+
+/* abrir, dibujar y aplicar */
+function ledOpen(){
+  LED.E=croqNorm((C.layout!=='param'&&C.croq)||CROQ_DEF);
+  LED.cfg=ledClone(C.layout!=='param'&&C.dockCfg.length>=LED.E.docks.length?C.dockCfg.slice(0,LED.E.docks.length):(C.croq&&C.croq.dockCfg)||CROQ_DOCKS0());
+  while(LED.cfg.length<LED.E.docks.length)LED.cfg.push({use:'both',cl:CLI_IDS()});
+  LED.lev=C.levels;LED.hist=[];LED.sel=null;LED.drag=null;LED.dirty=false;LED.cl=CLI_IDS().includes(LED.cl)?LED.cl:C.clients[0].id;LED.sec=ledNextSec();
+  $('#led').hidden=false;document.body.style.overflow='hidden';ledTools();ledTool(LED.tool);requestAnimationFrame(()=>{ledFit();ledDraw();ledSide()});
+  $('#ledCancel').focus()}
+function ledClose(force){if(!force&&LED.dirty&&!confirmLeave())return;$('#led').hidden=true;document.body.style.overflow=''}
+function confirmLeave(){const b=$('#ledCancel');if(b.dataset.sure){delete b.dataset.sure;b.textContent='Cancelar';return true}b.dataset.sure='1';b.textContent='¿Descartar cambios?';setTimeout(()=>{delete b.dataset.sure;b.textContent='Cancelar'},3500);return false}
+function ledNextSec(){const used=new Set([...LED.E.rv,...LED.E.rh].map(e=>e[4]));return SECS.find(s=>!used.has(s))||'Z'}
+function ledTools(){const secs=[...new Set([...LED.E.rv,...LED.E.rh].map(e=>e[4]).concat(SECS.slice(0,8)))].sort();
+  $('#ledTools').innerHTML=`<h3>Herramientas</h3>${LED_TOOLS.map(([k,l,c])=>`<button class="led-tool" data-tool="${k}" aria-pressed="false"><i style="background:${c}"></i>${l}</button>`).join('')}
+  <h3>Para lo que dibujes</h3>
+  <label class="led-f"><span>Cliente</span><select id="ledCl">${C.clients.map(k=>`<option value="${k.id}"${k.id===LED.cl?' selected':''}>${esc(k.n)}</option>`).join('')}</select></label>
+  <label class="led-f"><span>Sector de racks</span><select id="ledSec">${secs.map(s=>`<option${s===LED.sec?' selected':''}>${s}</option>`).join('')}</select></label>
+  <label class="led-f"><span>Tipo de estructura</span><select id="ledKind"><option value="rack"${LED.kind==='rack'?' selected':''}>Rack selectivo (pallets)</option><option value="shelf"${LED.kind==='shelf'?' selected':''}>Estantería (cajas)</option></select></label>
+  <h3>Nave y módulos</h3>
+  <div class="led-f"><span>Ancho de la nave</span><div class="led-stp"><button data-mod="-1" aria-label="Quitar módulo">−</button><b id="ledW"></b><button data-mod="1" aria-label="Agregar módulo">+</button></div><span class="note">Cada módulo suma ${MOD_COLS*CW} m de ancho a la derecha.</span></div>
+  <label class="row" style="gap:8px;align-items:flex-start"><input type="checkbox" id="ledModFill"${LED.mod?' checked':''} style="margin-top:3px"><span class="note">Al agregar un módulo, llenarlo con racks del cliente elegido y un muelle</span></label>
+  <div class="led-f"><span>Niveles de altura de los racks</span><div class="led-stp"><button data-lev="-1" aria-label="Menos niveles">−</button><b id="ledLev"></b><button data-lev="1" aria-label="Más niveles">+</button></div></div>`}
+function ledTool(k){LED.tool=k;LED.drag=null;document.querySelectorAll('#ledTools [data-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tool===k));$('#ledHint').textContent=LED_HINT[k];
+  $('#ledCv').style.cursor=k==='sel'?'default':k==='erase'?'not-allowed':'crosshair';ledDraw()}
+function ledFit(){const wrap=$('#ledWrap'),cv=$('#ledCv'),dpr=Math.min(2,devicePixelRatio||1),w=wrap.clientWidth,h=wrap.clientHeight;cv.width=w*dpr;cv.height=h*dpr;
+  const W=LED.E.W,R=ROW1-1,padL=26,padT=20,padB=Math.min(70,h*.14)+24,padR=12,s=Math.max(3,Math.min((w-padL-padR)/W,(h-padT-padB)/(R*RH/CW)));
+  LED.sw=s;LED.sh=s*RH/CW;LED.ox=padL+Math.max(0,(w-padL-padR-W*s)/2);LED.oy=padT+Math.max(0,(h-padT-padB-R*LED.sh)/2);LED.dpr=dpr}
+const LX=c=>LED.ox+(c-2)*LED.sw,LY=r=>LED.oy+(r-2)*LED.sh;
+function ledCell(ev){const b=$('#ledCv').getBoundingClientRect(),x=ev.clientX-b.left,y=ev.clientY-b.top,c=2+Math.floor((x-LED.ox)/LED.sw),r=2+Math.floor((y-LED.oy)/LED.sh);
+  if(c<2||c>LED.E.W+1||r<2||r>ROW1+3)return null;return{c,r:Math.min(r,ROW1+1)}}
+function hexA(col,a){const n=typeof col==='number'?col:parseInt(String(col).replace('#',''),16);return`rgba(${n>>16&255},${n>>8&255},${n&255},${a})`}
+function ledDraw(){const cv=$('#ledCv');if(!cv||$('#led').hidden||!LED.E)return;const x=cv.getContext('2d'),E=LED.E,sw=LED.sw,sh=LED.sh;
+  x.setTransform(LED.dpr,0,0,LED.dpr,0,0);x.clearRect(0,0,cv.width,cv.height);
+  const W=E.W,X0=LX(2),Y0=LY(2),X1=LX(W+2),Y1=LY(ROW1+1);
+  const box=(r,fill,stroke,lw=1,dash)=>{const a=LX(r[0]),b=LY(r[1]),w=LX(r[2]+1)-a,h=LY(r[3]+1)-b;if(fill){x.fillStyle=fill;x.fillRect(a,b,w,h)}if(stroke){x.setLineDash(dash||[]);x.lineWidth=lw;x.strokeStyle=stroke;x.strokeRect(a+lw/2,b+lw/2,w-lw,h-lw);x.setLineDash([])}return[a,b,w,h]};
+  const txt=(t,r,col,max,bold=700)=>{const[a,b]=[LX(r[0]),LY(r[1])],w=LX(r[2]+1)-a,h=LY(r[3]+1)-b;if(w<18||h<8)return;let f=Math.min(13,Math.max(8,Math.min(h*.55,sw*1.2)));x.font=`${bold} ${f}px "Plus Jakarta Sans",system-ui,sans-serif`;
+    const vert=h>w*1.6&&x.measureText(t).width>w-4;x.save();x.translate(a+w/2,b+h/2);if(vert)x.rotate(-Math.PI/2);const lim=(vert?h:w)-6;while(f>7&&x.measureText(t).width>lim){f-=.5;x.font=`${bold} ${f}px "Plus Jakarta Sans",system-ui,sans-serif`}
+    if(x.measureText(t).width<=lim+(max||0)){x.fillStyle=col;x.textAlign='center';x.textBaseline='middle';x.fillText(t,0,0)}x.restore()};
+  // piso y grilla
+  x.fillStyle='#f5f7f9';x.fillRect(X0,Y0,X1-X0,Y1-Y0);
+  x.lineWidth=1;for(let c=2;c<=W+2;c++){x.strokeStyle=(c-2)%5===0?'rgba(40,60,80,.13)':'rgba(40,60,80,.05)';x.beginPath();x.moveTo(Math.round(LX(c))+.5,Y0);x.lineTo(Math.round(LX(c))+.5,Y1);x.stroke()}
+  for(let r=2;r<=ROW1+1;r++){x.strokeStyle=(r-2)%5===0?'rgba(40,60,80,.13)':'rgba(40,60,80,.05)';x.beginPath();x.moveTo(X0,Math.round(LY(r))+.5);x.lineTo(X1,Math.round(LY(r))+.5);x.stroke()}
+  x.fillStyle='#66737f';x.font='600 10px "IBM Plex Mono",monospace';x.textAlign='center';x.textBaseline='bottom';for(let c=2;c<=W+1;c+=sw<12?5:2)x.fillText(colName(c),LX(c)+sw/2,Y0-4);
+  x.textAlign='right';x.textBaseline='middle';for(let r=2;r<=ROW1;r+=5)x.fillText(r,X0-4,LY(r)+sh/2);
+  // pasillo principal
+  const mr=[2,E.mainRow-1,W+1,E.mainRow];x.fillStyle='rgba(25,40,58,.05)';x.fillRect(LX(2),LY(mr[1]),LX(W+2)-LX(2),LY(mr[3]+1)-LY(mr[1]));txt('PASILLO PRINCIPAL',[2,mr[1],Math.min(W+1,32),mr[3]],'rgba(25,40,58,.35)');
+  for(const e of E.areas){box(ledRect('areas',e),hexA(e[5]||0xf6dcc8,.75),'#d9a77c',1.5);txt(e[0],ledRect('areas',e),'rgba(80,60,40,.75)')}
+  for(const e of E.walks)box(e,'rgba(140,201,140,.55)','#e2b600',1);
+  box(E.recv,'rgba(165,138,230,.28)','#7a56d6',1.5,[5,3]);txt('RECEPCIÓN',E.recv,'#5a3cb0');
+  box(E.disp,'rgba(141,182,234,.3)','#1f5fd6',1.5,[5,3]);txt('PRE-DESPACHO',E.disp,'#1f4fa8');
+  for(const[k,z]of Object.entries(E.zones)){const c=cli(k).col;box(z,hexA(c,.22),hexA(c,.9),2);txt('ZONA '+cliName(k).toUpperCase(),z,hexA(c,1))}
+  box(E.cart,'rgba(91,107,124,.18)','#5b6b7c',1.2);txt('CARROS',E.cart,'#3e4c5a');
+  // muelles: andén y portón en la pared
+  E.docks.forEach((d,i)=>{const u=(LED.cfg[i]||{use:'off'}).use,col=DOCK_COL[u]||DOCK_COL.off,r=ledRect('docks',d);box(r,hexA(col[0],.85),hexA(col[1],.9),1.5);
+    const a=LX(d[0]),w=LX(d[1]+1)-a;x.fillStyle=hexA(col[1],1);x.fillRect(a,Y1,w,Math.max(14,sh*1.6));x.fillStyle='#fff';x.font=`800 ${Math.max(9,Math.min(12,w*.38))}px "Plus Jakarta Sans",sans-serif`;x.textAlign='center';x.textBaseline='middle';x.fillText('M'+(i+1),a+w/2,Y1+Math.max(14,sh*1.6)/2)});
+  for(const e of E.rooms){const r=ledRect('rooms',e);box(r,e[5]==='cage'?'rgba(220,220,220,.9)':'#e6ebf1','#7d8a97',2);txt(e[0],r,'#33404d')}
+  for(const e of E.tables){const r=ledRect('tables',e);box(r,'#ead9c2','#9c7a52',1.5);txt(e[0],r,'#6b5235')}
+  for(const e of E.walls)box(e,'#1d242c',null);
+  const rack=(t,e)=>{const r=ledRect(t,e),c=cli(e[6]).col,sm=e[5]&&e[5]!=='rack';const[a,b,w,h]=box(r,hexA(c,sm?.45:.85),hexA(c,1),1);
+    // frente hacia el pasillo: borde naranja
+    x.fillStyle='#f47a1f';const f=-(e[3]||1),k=Math.max(1.5,Math.min(3,sw*.18));if(t==='rv')x.fillRect(f<0?a:a+w-k,b,k,h);else x.fillRect(a,f<0?b:b+h-k,w,k)};
+  E.rv.forEach(e=>rack('rv',e));E.rh.forEach(e=>rack('rh',e));
+  // etiquetas de sector
+  const sx={};for(const[t,arr]of[['rv',E.rv],['rh',E.rh]])for(const e of arr){const r=ledRect(t,e),s=sx[e[4]]=sx[e[4]]||[1e9,1e9,-1e9,-1e9];s[0]=Math.min(s[0],r[0]);s[1]=Math.min(s[1],r[1]);s[2]=Math.max(s[2],r[2]);s[3]=Math.max(s[3],r[3])}
+  x.font='800 12px "Plus Jakarta Sans",sans-serif';x.textAlign='center';x.textBaseline='bottom';for(const[s,r]of Object.entries(sx)){const t='SECTOR '+s,a=(LX(r[0])+LX(r[2]+1))/2,b=LY(r[1])-1>Y0+14?LY(r[1])-1:LY(r[3]+1)+15;if(b<Y1-2){x.fillStyle='rgba(255,255,255,.85)';const w=x.measureText(t).width+8;x.fillRect(a-w/2,b-14,w,14);x.fillStyle='#16306e';x.fillText(t,a,b)}}
+  // paredes de la nave y límite del módulo original
+  x.lineWidth=3;x.strokeStyle='#2c3640';x.strokeRect(X0-1.5,Y0-1.5,X1-X0+3,Y1-Y0+3);
+  if(W>51){x.setLineDash([6,5]);x.lineWidth=1.5;x.strokeStyle='rgba(31,95,214,.7)';for(let m=51;m<W;m+=MOD_COLS){const xx=LX(m+2);x.beginPath();x.moveTo(xx,Y0);x.lineTo(xx,Y1);x.stroke()}x.setLineDash([])}
+  // selección
+  const s=ledGet(LED.sel);if(s){const t=LED.sel.t,d=LED.drag&&LED.drag.mode==='move'&&LED.drag.d||[0,0],r=ledRect(t,s).map((v,i)=>v+(i%2?d[1]:d[0]));if(t==='docks')r[3]=ROW1;
+    const ok=LED.drag&&LED.drag.mode==='move'?ledMoveOk(t,s,r):true;box(r,ok?'rgba(31,95,214,.12)':'rgba(214,63,63,.2)',ok?'#1f5fd6':'#d63f3f',2.5,[6,4])}
+  // borrador del dibujo
+  if(LED.drag&&LED.drag.mode==='draw'){const q=ledDraft();if(q){const ok=q.ok;box(q.rect,ok?'rgba(31,95,214,.18)':'rgba(214,63,63,.22)',ok?'#1f5fd6':'#d63f3f',2,[5,3]);
+    if(q.label){x.font='700 12px "Plus Jakarta Sans",sans-serif';const t=q.label,w=x.measureText(t).width+10,a=Math.min(LX(q.rect[2]+1)+6,X1-w),b=Math.max(Y0,LY(q.rect[1])-20);x.fillStyle='rgba(19,28,38,.88)';x.fillRect(a,b,w,18);x.fillStyle='#fff';x.textAlign='left';x.textBaseline='middle';x.fillText(t,a+5,b+9)}}}
+  const C2=ledCounts();$('#ledInfo').textContent=`Nave de ${C2.w.toLocaleString('es-AR')} m × ${C2.d.toFixed(0)} m · ${C2.pos.toLocaleString('es-AR')} posiciones · ${C2.racks} racks · ${C2.docks} muelles · ${C2.zones} zonas de preparación`;
+  const lw=$('#ledW');if(lw)lw.textContent=C2.w+' m';const ll=$('#ledLev');if(ll)ll.textContent=LED.lev+' niveles'}
+function ledMoveOk(t,e,r){if(!inB(r.map((v,i)=>i===3&&t==='docks'?Math.min(v,ROW1):v)))return false;if(t==='docks')return!ledDockClash(r[0],r[2],e)&&!ledRackOn(r);return!ledClash(t,r,e)}
+const ledRackOn=r=>[...LED.E.rv.map(e=>ledRect('rv',e)),...LED.E.rh.map(e=>ledRect('rh',e))].some(q=>ovl(r,q));
+// lo que se va a crear con la herramienta activa
+function ledDraft(){const d=LED.drag;if(!d)return null;const a=d.p0,b=d.p1,t=LED.tool,E=LED.E,c0=Math.min(a.c,b.c),c1=Math.max(a.c,b.c),r0=Math.min(a.r,b.r,ROW1),r1=Math.min(ROW1,Math.max(a.r,b.r));
+  const out=(rect,items,label)=>{const ok=inB(rect)&&items.every(([tt,e])=>inB(ledRect(tt,e))&&!ledClash(tt,ledRect(tt,e)));return{rect,items,label,ok}};
+  const sec=LED.sec,kind=LED.kind==='shelf'?'shelf':null,cl=LED.cl;
+  if(t==='rackV2'){const r=[a.c,r0,a.c+1,r1],n=r1-r0+1;return out(r,[['rv',[a.c,r0,r1,1,sec,kind,cl]],['rv',[a.c+1,r0,r1,-1,sec,kind,cl]]],`2 racks × ${n} posiciones × ${LED.lev} niveles = ${2*n*LED.lev}`)}
+  if(t==='rackV1'){const free=c=>c>=2&&c<=E.W+1&&!ledClash('rv',[c,r0,c,r1]),side=free(a.c-1)||!free(a.c+1)?1:-1,n=r1-r0+1;return out([a.c,r0,a.c,r1],[['rv',[a.c,r0,r1,side,sec,kind,cl]]],`${n} posiciones × ${LED.lev} niveles = ${n*LED.lev}`)}
+  if(t==='rackH2'){const r=[c0,a.r,c1,a.r+1],n=(c1-c0+1)*2;return out(r,[['rh',[a.r,c0,c1,1,sec,kind,cl]],['rh',[a.r+1,c0,c1,-1,sec,kind,cl]]],`2 racks × ${n} posiciones × ${LED.lev} niveles = ${2*n*LED.lev}`)}
+  if(t==='rackH1'){const free=r=>r>=2&&r<=ROW1&&!ledClash('rh',[c0,r,c1,r]),side=free(a.r-1)||!free(a.r+1)?1:-1,n=(c1-c0+1)*2;return out([c0,a.r,c1,a.r],[['rh',[a.r,c0,c1,side,sec,kind,cl]]],`${n} posiciones × ${LED.lev} niveles = ${n*LED.lev}`)}
+  if(t==='dock'){let d0=a.c,d1=Math.min(E.W+1,a.c+1);if(d1===d0&&d0>2)d0--;const top=(a.c===b.c&&a.r===b.r)||Math.min(a.r,b.r)>=ROW1-1?ROW1-3:Math.min(a.r,b.r);const rect=[d0,top,d1,ROW1];
+    return{rect,items:[['docks',[d0,d1,top]]],label:'Muelle '+(E.docks.length+1),ok:inB(rect)&&!ledDockClash(d0,d1)&&!ledRackOn(rect)}}
+  const rect=[c0,r0,c1,r1],lbl=`${((c1-c0+1)*CW).toFixed(0)} m × ${((r1-r0+1)*RH).toFixed(1)} m`;
+  if(t==='room')return out(rect,[['rooms',['Oficina',c0,r0,c1,r1,'office']]],lbl);
+  if(t==='table')return out(rect,[['tables',['Preparación',c0,r0,c1,r1]]],lbl);
+  return{rect,items:[[t,rect]],label:lbl,ok:inB(rect)}}
+function ledCommit(q){const E=LED.E;if(!q.ok){toast(LED.tool==='dock'?'Ese muelle choca con otro muelle o con un rack: dejá al menos una columna entre portones y el andén libre.':'No entra ahí: se superpone con otro rack, sala o mesa, o se sale de la nave.');return}
+  ledPush();let sel=null;
+  for(const[t,e]of q.items){if(t==='docks'){E.docks.push(e);LED.cfg.push({use:'both',cl:CLI_IDS()});const o=E.docks.map((d,i)=>({d,c:LED.cfg[i]})).sort((p,q)=>p.d[0]-q.d[0]);E.docks=o.map(x=>x.d);LED.cfg=o.map(x=>x.c);sel={t,i:E.docks.indexOf(e)}}
+    else if(t==='zone'){E.zones[LED.cl]=e;sel={t:'zone',k:LED.cl}}else if(t==='recv'||t==='disp'){E[t]=e;sel={t}}
+    else if(t==='area'){E.areas.push(['ÁREA',...e,0xf6dcc8]);sel={t:'areas',i:E.areas.length-1}}else if(t==='walk'){E.walks.push(e);sel={t:'walks',i:E.walks.length-1}}
+    else{E[t].push(e);sel={t,i:E[t].length-1}}}
+  LED.sel=sel;ledDraw();ledSide()}
+function ledDelete(s){if(!s)return;if(['recv','disp','cart'].includes(s.t))return toast(`${LT[s.t]} es necesaria para la simulación: arrastrala para moverla o dibujala de nuevo con su herramienta.`);
+  if(s.t==='docks'&&LED.E.docks.length<=1)return toast('El depósito necesita al menos un muelle.');
+  ledPush();if(s.t==='zone')delete LED.E.zones[s.k];else{LED.E[s.t].splice(s.i,1);if(s.t==='docks')LED.cfg.splice(s.i,1)}LED.sel=null;ledDraw();ledSide()}
+function ledModule(dir){const E=LED.E;
+  if(dir>0){if(E.W+MOD_COLS>51+MOD_COLS*6)return toast('Llegaste al máximo de 6 módulos agregados.');ledPush();const c0=E.W+2;E.W+=MOD_COLS;
+    if(LED.mod){const sec=ledNextSec(),cl=LED.cl;for(let k=c0+1;k+1<=E.W+1;k+=3)for(const[r0,r1]of[[3,16],[18,23]])E.rv.push([k,r0,r1,1,sec,null,cl],[k+1,r0,r1,-1,sec,null,cl]);
+      const dc=c0+5;if(!ledDockClash(dc,dc+1)){E.docks.push([dc,dc+1,44]);LED.cfg.push({use:'both',cl:[cl]})}LED.sec=ledNextSec();ledTools();ledTool(LED.tool)}
+    ledFit();ledDraw();ledSide();toast(`Módulo agregado: la nave ahora mide ${E.W*CW} m de ancho.`+(LED.mod?' Se sumaron racks y un muelle para '+cliName(LED.cl)+'.':''));return}
+  if(E.W-MOD_COLS<51)return toast('Sólo podés quitar los módulos que agregaste. Para achicar el croquis original, borrá racks o salas.');
+  const cut=E.W+2-MOD_COLS,inside=[],part=[];for(const it of ledItems()){const r=ledRect(it.t,it.e);if(r[2]<cut)continue;(r[0]>=cut?inside:part).push(it)}
+  const fixed=[...inside,...part].find(it=>['recv','disp','cart'].includes(it.t));if(fixed)return toast(`Primero mové ${LT[fixed.t].toLowerCase()} fuera del último módulo.`);
+  if(part.length)return toast(`No se puede quitar el módulo: ${itName(part[0])} queda cortado. Movelo o borralo primero.`);
+  if(E.docks.length-inside.filter(i=>i.t==='docks').length<1)return toast('El depósito necesita al menos un muelle.');
+  ledPush();for(const it of inside.filter(i=>i.i!=null).sort((a,b)=>b.i-a.i)){E[it.t].splice(it.i,1);if(it.t==='docks')LED.cfg.splice(it.i,1)}for(const it of inside.filter(i=>i.t==='zone'))delete E.zones[it.k];
+  E.W-=MOD_COLS;LED.sel=null;ledFit();ledDraw();ledSide();toast(`Módulo quitado${inside.length?` con ${inside.length} elementos`:''}: la nave mide ${E.W*CW} m de ancho.`)}
+function ledWarnings(){const E=LED.E,w=[],cfg=LED.cfg;
+  if(!E.rv.length&&!E.rh.length)w.push('No hay racks: no habrá posiciones de stock.');
+  if(!cfg.some(d=>d.use==='in'||d.use==='both'))w.push('Ningún muelle recibe mercadería.');if(!cfg.some(d=>d.use==='out'||d.use==='both'))w.push('Ningún muelle despacha.');
+  if(!E.rooms.some(r=>r[5]==='dining'))w.push('No hay comedor: los operarios almuerzan en el pasillo.');if(!E.rooms.some(r=>r[5]==='locker'))w.push('No hay vestuario o baño.');
+  const noZ=C.clients.filter(k=>!E.zones[k.id]);if(noZ.length)w.push('Sin zona de preparación: '+noZ.map(k=>k.n).join(', ')+'. Usan la zona de pre-despacho.');
+  const has=new Set([...E.rv,...E.rh].map(e=>e[6]));const noR=C.clients.filter(k=>!has.has(k.id));if(noR.length&&(E.rv.length||E.rh.length))w.push('Sin racks asignados: '+noR.map(k=>k.n).join(', ')+'.');
+  return w}
+function ledSide(){const el=$('#ledSide');if(!el)return;const s=LED.sel,e=ledGet(s),opt=(o,v)=>Object.entries(o).map(([k,l])=>`<option value="${k}"${String(k)===String(v)?' selected':''}>${esc(l)}</option>`).join('');
+  const cOpt=v=>C.clients.map(k=>`<option value="${k.id}"${k.id===v?' selected':''}>${esc(k.n)}</option>`).join('');let hh='';
+  if(s&&e){const r=ledRect(s.t,e),m=`${((r[2]-r[0]+1)*CW).toFixed(0)} m × ${((Math.min(r[3],ROW1)-r[1]+1)*RH).toFixed(1)} m`;
+    hh=`<h3>Elemento elegido</h3><p><b>${LT[s.t]}${s.i!=null?' '+(s.i+1):''}</b><br><span class="note">${m} · columnas ${colName(r[0])} a ${colName(r[2])}, filas ${r[1]} a ${Math.min(r[3],ROW1)}</span></p>`;
+    if(s.t==='rv'||s.t==='rh'){const v=s.t==='rv',n=(e[2]-e[1]+1)*(v?1:2);
+      hh+=`<p class="note">${n} posiciones de largo × ${LED.lev} niveles = <b>${n*LED.lev}</b> posiciones.</p>
+      <label class="led-f"><span>Cliente</span><select data-f="cl">${cOpt(e[6])}</select></label>
+      <label class="led-f"><span>Sector</span><select data-f="sec">${opt(Object.fromEntries([...new Set([e[4],...SECS.slice(0,8)])].sort().map(x=>[x,'Sector '+x])),e[4])}</select></label>
+      <label class="led-f"><span>Tipo</span><select data-f="kind">${opt({rack:'Rack selectivo (pallets)',shelf:'Estantería (cajas)',bin:'Estantería de bines'},e[5]||'rack')}</select></label>
+      <label class="led-f"><span>Frente (de dónde se toma la mercadería)</span><select data-f="side">${opt(v?{1:'Pasillo a la izquierda','-1':'Pasillo a la derecha'}:{1:'Pasillo arriba','-1':'Pasillo abajo'},e[3]||1)}</select></label>`}
+    else if(s.t==='docks'){const d=LED.cfg[s.i]||{use:'both',cl:[]};hh+=`<label class="led-f"><span>Uso del muelle</span><select data-f="use">${opt(USE_LBL,d.use)}</select></label>
+      <p class="note">Clientes: ${d.cl.length?d.cl.map(cliName).join(', '):'ninguno'}. Después de aplicar, los cambiás en Panel de control › Clientes.</p>`}
+    else if(s.t==='rooms')hh+=`<label class="led-f"><span>Nombre</span><input type="text" data-f="name" maxlength="28" value="${esc(e[0])}"></label><label class="led-f"><span>Tipo de sala</span><select data-f="rkind">${opt(ROOMK,e[5])}</select></label><p class="note">Los operarios van al comedor a almorzar y al vestuario al baño.</p>`;
+    else if(s.t==='tables'||s.t==='areas')hh+=`<label class="led-f"><span>Nombre</span><input type="text" data-f="name" maxlength="28" value="${esc(e[0])}"></label>`;
+    else if(s.t==='zone')hh+=`<label class="led-f"><span>Cliente de la zona</span><select data-f="zcl">${cOpt(s.k)}</select></label><p class="note">Acá los operarios arman y consolidan los pedidos del cliente.</p>`;
+    else if(['recv','disp','cart'].includes(s.t))hh+=`<p class="note">Arrastrala para moverla o dibujala de nuevo con su herramienta para cambiar el tamaño.</p>`;
+    hh+=`<button class="btn sm" data-ledact="del">Borrar</button>`}
+  else hh=`<h3>Cómo se usa</h3><p class="note">1. Elegí una herramienta a la izquierda.<br>2. Dibujá sobre el plano arrastrando.<br>3. Con <b>Seleccionar y mover</b> tocás cualquier elemento para cambiar cliente, tipo o nombre, o arrastrarlo.<br>4. Tocá <b>Aplicar al gemelo</b> para verlo en 3D. Se guarda en tu cuenta.</p>
+    <p class="note" style="margin-top:6px">El borde naranja de cada rack marca su frente, del lado del pasillo.</p>`;
+  const c=ledCounts();hh+=`<h3>Resumen</h3><div class="led-stat"><span>Posiciones de pallet</span><b>${c.pos.toLocaleString('es-AR')}</b><span>Racks y estanterías</span><b>${c.racks}</b><span>Muelles</span><b>${c.docks}</b><span>Ancho × fondo</span><b>${c.w} × ${c.d.toFixed(0)} m</b></div>`;
+  const w=ledWarnings();if(w.length)hh+=w.map(t=>`<p class="led-warn">${esc(t)}</p>`).join('');el.innerHTML=hh}
+function ledApply(){const E=LED.E,q=ledClone(E),isDef=JSON.stringify(croqNorm(CROQ_DEF))===JSON.stringify(q)&&LED.lev===DEFAULTS.levels;
+  const cfg=ledClone(LED.cfg);q.dockCfg=cfg;q.rev=Date.now();
+  if(isDef&&JSON.stringify(cfg)===JSON.stringify(CROQ_DOCKS0()))delete C.croq;else C.croq=q;
+  C.layout='croquis';C.docks=E.docks.length;C.dockCfg=ledClone(cfg);C.levels=LED.lev;GEOMK=null;NAV=null;
+  const had=!!IMP;IMP=null;if(had&&INV){try{applyInventory(INV)}catch(e){console.error(e);IMP=null}}
+  if(!IMP){S=freshState(C);SNAPS.clear();snap();camFitted=false;buildLayout()}
+  ledClose(true);lastPredT=-99;renderConfig();if($('#drawer').classList.contains('open'))showTab(tab);dirty=true;updateUI(true);try{setView('general')}catch(e){}
+  // racks a los que no se llega
+  let bad=0;try{const N=navGrid(),GM=geom(C),cage=CRQ().rooms.filter(q=>q[5]==='cage').map(q=>[gx0(q[1]),gz0(q[2]),gx0(q[3]+1),gz0(q[4]+1)]),inCage=(x,z)=>cage.some(([a,b,c,d])=>x>=a-.8&&x<=c+.8&&z>=b-.8&&z<=d+.8);
+    for(const r of GM.racks){let ok=false;for(let j=0;j<r.cells.length&&!ok;j++){const f=rackFace(GM,r,j,'op');if(N.reach('op',f.x,f.z)||inCage(f.x,f.z))ok=true}if(!ok)bad++}}catch(e){console.error(e)}
+  toast(`Layout aplicado: ${nPos(C).toLocaleString('es-AR')} posiciones y ${C.docks} muelles. La simulación arrancó de nuevo con el depósito nuevo.`+(bad?` Ojo: ${bad} rack${bad>1?'s':''} sin pasillo libre al frente.`:''))}
+/* eventos */
+(function(){const cv=$('#ledCv');
+  document.addEventListener('click',e=>{if(e.target.closest('#ledBtn,[data-led]'))ledOpen()});
+  $('#ledCancel').addEventListener('click',()=>ledClose(false));$('#ledApply').addEventListener('click',ledApply);$('#ledUndo').addEventListener('click',ledUndo);
+  $('#ledReset').addEventListener('click',()=>{ledPush();LED.E=croqNorm(CROQ_DEF);LED.cfg=CROQ_DOCKS0();LED.lev=DEFAULTS.levels;LED.sel=null;ledTools();ledTool(LED.tool);ledFit();ledDraw();ledSide();toast('Se cargó el croquis original. Tocá Aplicar al gemelo para usarlo.')});
+  $('#ledTools').addEventListener('click',e=>{const b=e.target.closest('[data-tool]');if(b){ledTool(b.dataset.tool);return}
+    const m=e.target.closest('[data-mod]');if(m){ledModule(+m.dataset.mod);return}
+    const l=e.target.closest('[data-lev]');if(l){const v=Math.max(1,Math.min(8,LED.lev+ +l.dataset.lev));if(v!==LED.lev){ledPush();LED.lev=v;ledDraw();ledSide()}}});
+  $('#ledTools').addEventListener('change',e=>{const t=e.target;if(t.id==='ledCl')LED.cl=t.value;else if(t.id==='ledSec')LED.sec=t.value;else if(t.id==='ledKind')LED.kind=t.value;else if(t.id==='ledModFill')LED.mod=t.checked});
+  $('#ledSide').addEventListener('click',e=>{if(e.target.closest('[data-ledact="del"]'))ledDelete(LED.sel)});
+  $('#ledSide').addEventListener('change',e=>{const f=e.target.dataset.f,s=LED.sel,el=ledGet(s);if(!f||!el)return;const v=e.target.value;ledPush();
+    if(f==='cl')el[6]=v;else if(f==='sec')el[4]=v;else if(f==='kind')el[5]=v==='rack'?null:v;else if(f==='side')el[3]=+v;else if(f==='use')LED.cfg[s.i].use=v;
+    else if(f==='name')el[0]=v.trim()||el[0];else if(f==='rkind')el[5]=v;else if(f==='zcl'&&v!==s.k){LED.E.zones[v]=el;delete LED.E.zones[s.k];LED.sel={t:'zone',k:v}}
+    ledDraw();ledSide()});
+  cv.addEventListener('pointerdown',e=>{const p=ledCell(e);if(!p)return;e.preventDefault();try{cv.setPointerCapture(e.pointerId)}catch(_){}
+    if(LED.tool==='sel'){const it=ledHit(p.c,p.r);LED.sel=it?(it.t==='zone'?{t:'zone',k:it.k}:{t:it.t,i:it.i}):null;LED.drag=it?{mode:'move',p0:p,d:[0,0]}:null;ledDraw();ledSide();return}
+    if(LED.tool==='erase'){const it=ledHit(p.c,p.r);if(it)ledDelete(it.t==='zone'?{t:'zone',k:it.k}:{t:it.t,i:it.i});return}
+    LED.drag={mode:'draw',p0:p,p1:p};ledDraw()});
+  cv.addEventListener('pointermove',e=>{const p=ledCell(e);$('#ledPos').textContent=p&&p.r<=ROW1?`Columna ${colName(p.c)} · Fila ${p.r}`:'';const d=LED.drag;if(!d||!p)return;
+    if(d.mode==='move'){const n=[p.c-d.p0.c,LED.sel.t==='docks'?0:p.r-d.p0.r];if(n[0]!==d.d[0]||n[1]!==d.d[1]){d.d=n;ledDraw()}}else if(p.c!==d.p1.c||p.r!==d.p1.r){d.p1=p;ledDraw()}});
+  const up=()=>{const d=LED.drag;if(!d)return;if(d.mode==='draw'){const q=ledDraft();LED.drag=null;if(q)ledCommit(q);else ledDraw();return}LED.drag=null;
+    if(d.mode==='move'){const el=ledGet(LED.sel);if(el&&(d.d[0]||d.d[1])){const t=LED.sel.t,r=ledRect(t,el).map((v,i)=>v+(i%2?d.d[1]:d.d[0]));if(t==='docks')r[3]=ROW1;
+        if(ledMoveOk(t,el,r)){ledPush();ledSetRect(t,el,r);if(t==='docks'){const o=LED.E.docks.map((x,i)=>({x,c:LED.cfg[i]})).sort((a,b)=>a.x[0]-b.x[0]);LED.E.docks=o.map(z=>z.x);LED.cfg=o.map(z=>z.c);LED.sel.i=LED.E.docks.indexOf(el)}}
+        else toast('No se puede mover ahí: se superpone con otro elemento o se sale de la nave.')}ledDraw();ledSide();return}};
+  cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',()=>{LED.drag=null;ledDraw()});cv.addEventListener('pointerleave',()=>{$('#ledPos').textContent=''});
+  addEventListener('resize',()=>{if(!$('#led').hidden){ledFit();ledDraw()}});
+  document.addEventListener('keydown',e=>{if($('#led').hidden)return;const tg=e.target.tagName;if(tg==='INPUT'||tg==='SELECT'||tg==='TEXTAREA')return;
+    if(e.key==='Escape'){if(LED.sel){LED.sel=null;ledDraw();ledSide()}else ledClose(false);e.preventDefault()}
+    else if((e.key==='Delete'||e.key==='Backspace')&&LED.sel){ledDelete(LED.sel);e.preventDefault()}
+    else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){ledUndo();e.preventDefault()}},true);
+})();
 
 window.GD={
   getState(){const d=x=>x instanceof Date?x.toISOString():x;return{v:1,config:JSON.parse(JSON.stringify(C)),escenarios:SCEN.slice(),ahorro:AH,
     inventario:INV?{rows:INV.rows.map(r=>({...r,vto:d(r.vto)})),map:INV.map,headers:INV.headers,sheet:INV.sheet,sheets:INV.sheets,bad:INV.bad,file:INV.file||''}:null,invAplicado:!!IMP,
     pedidos:PED?{...PED,orders:PED.orders.map(o=>({...o,comp:d(o.comp),ing:d(o.ing)}))}:null,fc:{rule:FC.rule,prod:FC.prod,target:d(FC.target)},kpis:[...KPI_ON]}},
   setState(s){if(!s||typeof s!=='object')return;const D=v=>v?new Date(v):null;
-    if(s.config){Object.assign(C,s.config);if(!Array.isArray(C.dockCfg))C.dockCfg=CROQ_DOCKS()}
+    if(s.config){if(!s.config.croq)delete C.croq;Object.assign(C,s.config);if(C.croq&&!croqOk(C.croq))delete C.croq;if(!Array.isArray(C.dockCfg))C.dockCfg=CROQ_DOCKS();
+      if(C.layout!=='param'){const nd=CRQ().docks.length;if(C.docks!==nd||C.dockCfg.length<nd){C.docks=nd;C.dockCfg=CROQ_DOCKS()}}}
     if(Array.isArray(s.escenarios)){SCEN.length=0;SCEN.push(...s.escenarios)}
     if(s.ahorro&&Array.isArray(s.ahorro.cats)){AH=s.ahorro;ahSave()}
     if(s.fc){FC.rule=s.fc.rule||FC.rule;FC.prod=s.fc.prod||FC.prod;FC.target=D(s.fc.target)}

@@ -1,4 +1,12 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+
+/* inventario por cliente */
+.invc-list{display:grid;gap:8px}
+.drop.invc{gap:6px;padding:10px 12px;border-style:solid;border-width:1px;border-left:4px solid var(--cc)}
+.drop.invc.on{background:var(--surface)}
+.drop.invc.over{border-style:dashed}
+.invc-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.invc-h .note{margin-left:auto}
 /* editor de layout */
 .toast{z-index:300}
 .led{position:fixed;inset:0;z-index:250;background:var(--bg);display:flex;flex-direction:column}
@@ -2468,9 +2476,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!dlMenu.hidden){tog
 /* ---------------- Datos de ejemplo ---------------- */
 const DESC=['Guante de nitrilo M x100','Jeringa 10 ml x100','Catéter IV 20G','Sensor SpO2 adulto','Electrodo ECG x50','Kit de sutura','Bolsa colectora 2 l','Máscara N95 x20','Termómetro digital','Cable USB-C 1 m','Cargador 20 W','Auricular inalámbrico','Mouse inalámbrico','Batería 18650','Filtro HEPA','Monitor 24"','Teclado USB','Gasa estéril x50','Barbijo triple capa x50','Tensiómetro digital'];
 const CLIS=['Hospital Central','Clínica del Parque','Sanatorio San Martín','Farmacia Norte','Hospital Regional','Distribuidora Litoral','Tienda Electro Centro','Clínica Olivos','Centro Médico Oeste','Electrohogar Sur'];
-function sampleInventory(){
+function sampleInventory(S2){
   const rows=[],now=new Date();
-  S.pos.forEach((p,i)=>{if(!p.sku)return;const{r,b,l}=posRC(i,C),nl=i%3===0?2:1;let q=p.qty;
+  (S2||S).pos.forEach((p,i)=>{if(!p.sku)return;const{r,b,l}=posRC(i,C),nl=i%3===0?2:1;let q=p.qty;
     for(let k=0;k<nl;k++){const qq=k===nl-1?q:Math.floor(q/2);q-=qq;const v=new Date(now);v.setDate(v.getDate()+((i*37+k*101)%420)-8);v.setHours(0,0,0,0);
       rows.push({own:cliName(p.cl),pos:`R${pad(r+1)}-B${pad(b+1)}-N${l+1}`,sku:p.sku,desc:DESC[(parseInt(p.sku.replace(/\D/g,''))||0)%DESC.length],lote:'L'+(24000+(i*13+k*7)%9000),vto:v,qty:qq,cap:p.cap,cls:p.cls})}});
   const map={pos:0,sku:1,desc:2,lote:3,vto:4,qty:5,cap:6,cls:7,own:8};
@@ -2537,8 +2545,8 @@ function dropzone(id,label,hint){return`<div class="drop" data-drop="${id}"><inp
   <div class="drop-act"><button class="btn primary sm" data-browse="${id}">Examinar…</button><button class="btn sm" data-sample="${id}">Usar ejemplo</button></div>
   <p class="note" id="st-${id}" aria-live="polite"></p></div>`}
 function renderDatos(){
-  $('#tab-datos').innerHTML=`<section class="grp"><h3>Inventario</h3>
-    <p class="note">Excel o CSV exportado del WMS con posición, SKU, descripción, lote, vencimiento, cantidad, capacidad y clase ABC. Solo SKU y cantidad son obligatorios.</p>
+  $('#tab-datos').innerHTML=`${invcHTML()}<section class="grp"><h3>Inventario general (todos los clientes en un archivo)</h3>
+    <p class="note">Si tenés un solo Excel con todos los clientes, cargalo acá; la columna Cliente indica de quién es cada fila. Excel o CSV exportado del WMS con posición, SKU, descripción, lote, vencimiento, cantidad, capacidad y clase ABC. Solo SKU y cantidad son obligatorios.</p>
     ${dropzone('inv','Arrastrá el Excel de inventario acá','.xlsx, .xls o .csv · una fila por posición, SKU y lote')}<div id="invPrev"></div></section>
   <section class="grp"><h3>Pedidos a preparar</h3><p class="note">El reporte de pedidos o deliveries se carga en la pestaña Preparación, donde se calcula cuándo queda todo listo.</p>
     <div class="btns"><button class="btn sm" data-goto="prep">Ir a Preparación</button></div></section>
@@ -2558,6 +2566,7 @@ let RAW={inv:null,ord:null};
 async function handleFile(id,file){
   const stEl=$('#st-'+id);if(stEl)stEl.innerHTML='Leyendo '+esc(file.name)+'…';
   try{const sheets=await readFile(file);RAW[id]=sheets;
+    if(id.startsWith('inv-')){const k=id.slice(4),inv=parseInventory(sheets);inv.file=file.name;INVC[k]=inv;renderInvc();toast(`${cliName(k)}: ${file.name} leído. Tocá Aplicar al gemelo para simular con ese stock.`);return}
     if(id==='inv'){INV=parseInventory(sheets);INV.file=file.name;invPreview()}
     else{PED=parseOrders(sheets);PED.file=file.name;ordPreview();renderFcRes()}
     if(stEl)stEl.textContent=file.name+' leído.';
@@ -2566,7 +2575,7 @@ async function handleFile(id,file){
 function wireDrops(root){
   root.addEventListener('click',e=>{
     const b=e.target.closest('[data-browse]');if(b){const f=$('#f-'+b.dataset.browse);f.value='';f.click();return}
-    const s=e.target.closest('[data-sample]');if(s){if(s.dataset.sample==='inv'){INV=sampleInventory();INV.file='Inventario de ejemplo';invPreview();$('#st-inv').textContent='Ejemplo generado con el stock actual del gemelo, con lotes y vencimientos.'}
+    const s=e.target.closest('[data-sample]');if(s){if(s.dataset.sample.startsWith('inv-')){const k=s.dataset.sample.slice(4);INVC[k]={sample:true,file:'Stock de ejemplo',rows:[]};renderInvc();return}if(s.dataset.sample==='inv'){INV=sampleInventory();INV.file='Inventario de ejemplo';invPreview();$('#st-inv').textContent='Ejemplo generado con el stock actual del gemelo, con lotes y vencimientos.'}
       else{PED=sampleOrders();ordPreview();renderFcRes();$('#st-ord').textContent='320 pedidos de ejemplo con compromisos en las próximas 10 h.'}return}
     const g=e.target.closest('[data-goto]');if(g)showTab(g.dataset.goto);
   });
@@ -2577,7 +2586,7 @@ function wireDrops(root){
 }
 wireDrops($('#tab-datos'));wireDrops($('#tab-prep'));
 $('#tab-datos').addEventListener('click',e=>{const id=e.target.id;
-  if(id==='invApply'&&INV){const r=applyInventory(INV);$('#st-inv').textContent=`Aplicado: ${r.placed} posiciones con stock${r.direct?' en su ubicación real':''}. ${r.notes.join(' ')}`;toast('Inventario aplicado al gemelo. El día simulado se reinició con tu stock.')}
+  if(id==='invApply'&&INV){const r=applyAllInv();$('#st-inv').textContent=`Aplicado: ${r.placed} posiciones con stock${r.direct?' en su ubicación real':''}. ${r.notes.join(' ')}`;toast('Inventario aplicado al gemelo. El día simulado se reinició con tu stock.')}
   if(id==='invClear'){INV=null;invPreview();$('#st-inv').textContent=''}
   if(id==='dlTpl')download('tpl','xlsx');if(id==='dlInv')download('inv');
 });
@@ -2596,6 +2605,49 @@ $('#tab-prep').addEventListener('click',e=>{const id=e.target.id;
   if(id==='fcTwin')loadOrdersToTwin();
   if(id==='fcExport')download('prep','xlsx');
 });
+
+
+/* ---------------- Inventario por cliente ---------------- */
+let INVC={};
+function baseState(){const keep=IMP;IMP=null;try{return freshState(C)}finally{IMP=keep}}
+function sampleClientInv(id,base){const s=sampleInventory(base||baseState()),n=cliName(id);return{...s,rows:s.rows.filter(r=>r.own===n),file:'Stock de ejemplo',sample:true}}
+function invStats(inv){const now=Date.now();return{skus:new Set(inv.rows.map(r=>r.sku)).size,units:inv.rows.reduce((a,r)=>a+r.qty,0),venc:inv.rows.filter(r=>r.vto&&r.vto.getTime()<now+30*864e5).length,pos:new Set(inv.rows.map(r=>r.pos).filter(Boolean)).size,rows:inv.rows.length}}
+const invcAny=()=>C.clients.some(k=>INVC[k.id]);
+// junta los archivos de cada cliente; los que no tienen archivo toman su parte del Excel general o el stock de ejemplo
+function mergeInv(){if(!invcAny())return INV;const rows=[],gen=INV&&!INV.merged?INV:null,who=r=>matchClient(r.own)||matchClient(r.sku);let base=null;
+  for(const k of C.clients){const inv=INVC[k.id];
+    if(inv&&!inv.sample){rows.push(...inv.rows.map(r=>({...r,own:k.n})));continue}
+    if(!inv&&gen){const rs=gen.rows.filter(r=>who(r)===k.id);if(rs.length){rows.push(...rs);continue}}
+    base=base||baseState();rows.push(...sampleClientInv(k.id,base).rows)}
+  if(gen)rows.push(...gen.rows.filter(r=>!who(r)));
+  return{rows,map:{},headers:[],sheet:'Por cliente',sheets:['Por cliente'],bad:0,file:'Inventario por cliente',merged:true}}
+function invCard(k){const inv=INVC[k.id],id='inv-'+k.id,cap=geom(C).pos.filter(p=>p.cl===k.id).length;let st,extra='';
+  if(inv&&inv.sample)st='<b>Stock de ejemplo</b> · lotes y vencimientos generados por el simulador';
+  else if(inv){const s=invStats(inv);st=`<b>${esc(inv.file||'Archivo')}</b> · ${s.skus.toLocaleString('es-AR')} SKU · ${Math.round(s.units).toLocaleString('es-AR')} unidades${s.pos?` · ${s.pos.toLocaleString('es-AR')} posiciones`:''}`;
+    if(s.venc)extra+=`<p class="warnline">${s.venc} filas vencen en menos de 30 días o ya vencieron.</p>`;
+    const need=s.pos||s.skus;if(need>cap)extra+=`<p class="warnline">El archivo ocupa ${need.toLocaleString('es-AR')} posiciones y el cliente tiene ${cap.toLocaleString('es-AR')} en sus racks: el resto se ubica en posiciones libres de otros sectores.</p>`;
+    if(inv.bad)extra+=`<p class="warnline">${inv.bad} filas sin cantidad numérica se omitieron.</p>`;
+    if(inv.sheets&&inv.sheets.length>1)extra+=`<div class="row"><label class="note" for="invs-${k.id}">Hoja</label><select id="invs-${k.id}" data-invsheet="${k.id}">${inv.sheets.map(n=>`<option${n===inv.sheet?' selected':''}>${esc(n)}</option>`).join('')}</select></div>`;
+    const miss=['pos','lote','vto'].filter(c=>inv.map&&inv.map[c]==null).map(c=>INV_LBL[c].toLowerCase());if(miss.length)extra+=`<p class="note">Sin columna de ${miss.join(', ')}.</p>`}
+  else st='Sin archivo · usa stock de ejemplo';
+  return`<div class="drop invc${inv&&!inv.sample?' on':''}" data-drop="${id}" style="--cc:${cliHex(k.id)}"><input type="file" id="f-${id}" accept=".xlsx,.xls,.xlsm,.csv,.txt" hidden>
+    <div class="invc-h"><span class="sw-c" style="background:${cliHex(k.id)}"></span><b>${esc(k.n)}</b><span class="note">${cap.toLocaleString('es-AR')} posiciones en sus racks</span></div>
+    <p class="note" id="st-${id}" aria-live="polite">${st}</p>${extra}
+    <div class="drop-act"><button class="btn primary sm" data-browse="${id}">Examinar…</button><button class="btn sm" data-sample="${id}">Usar ejemplo</button>${inv?`<button class="btn sm" data-invq="${k.id}">Quitar</button>`:''}</div></div>`}
+function invcSum(){const real=C.clients.filter(k=>INVC[k.id]&&!INVC[k.id].sample),smp=C.clients.filter(k=>INVC[k.id]&&INVC[k.id].sample);if(!real.length&&!smp.length)return'';
+  const rest=C.clients.length-real.length;
+  return`<div class="btns"><button class="btn primary sm" id="invcApply">Aplicar al gemelo${real.length?` (${real.length} cliente${real.length>1?'s':''} con archivo)`:''}</button><button class="btn sm" id="invcClear">Quitar todos</button></div>
+    <p class="note">Se arma el stock con ${real.length?real.map(k=>esc(k.n)).join(', '):'el ejemplo'}${real.length&&rest?` y ${INV&&!INV.merged?'el Excel general o ':''}stock de ejemplo para los otros ${rest}`:''}. Cada cliente queda en sus racks y el día simulado se reinicia.</p>`}
+function invcHTML(){return`<section class="grp" id="invcSec"><h3>Inventario por cliente</h3>
+    <p class="note">Cargá el Excel del WMS de cada cliente por separado y simulá con su stock real. Todas las filas de un archivo se asignan a ese cliente y se ubican en sus racks; si la posición tiene formato R01-B02-N1 se respeta. Los clientes sin archivo usan stock de ejemplo.</p>
+    <div class="invc-list">${C.clients.map(invCard).join('')}</div><div id="invcSum">${invcSum()}</div><p class="note" id="st-invc" aria-live="polite"></p></section>`}
+function renderInvc(){const s=$('#invcSec');if(s)s.outerHTML=invcHTML()}
+function applyAllInv(){const m=mergeInv();if(!m)return null;const r=applyInventory(m);renderInvc();return r}
+$('#tab-datos').addEventListener('click',e=>{
+  const q=e.target.closest('[data-invq]');if(q){delete INVC[q.dataset.invq];delete RAW['inv-'+q.dataset.invq];renderInvc();return}
+  if(e.target.id==='invcClear'){INVC={};renderInvc();toast('Se quitaron los inventarios por cliente. Aplicá de nuevo o cargá otros archivos.');return}
+  if(e.target.id==='invcApply'){const r=applyAllInv();if(r){const st=$('#st-invc');if(st)st.textContent=`Aplicado: ${r.placed.toLocaleString('es-AR')} posiciones con stock. ${r.notes.join(' ')}`;toast('Inventario por cliente aplicado al gemelo. El día simulado se reinició con ese stock.')}}});
+$('#tab-datos').addEventListener('change',e=>{const k=e.target.dataset.invsheet;if(!k||!RAW['inv-'+k])return;try{const f=INVC[k].file;INVC[k]={...parseInventory(RAW['inv-'+k],e.target.value),file:f};renderInvc()}catch(err){const st=$('#st-inv-'+k);if(st)st.innerHTML=`<span class="errline">${esc(err.message)}</span>`}});
 
 /* ---------------- Grabación de video ---------------- */
 let REC=null,recOpt={q:'wa',hud:true};
@@ -3010,7 +3062,7 @@ function ledApply(){const E=LED.E,q=ledClone(E),isDef=JSON.stringify(croqNorm(CR
 
 window.GD={
   getState(){const d=x=>x instanceof Date?x.toISOString():x;return{v:1,config:JSON.parse(JSON.stringify(C)),escenarios:SCEN.slice(),ahorro:AH,
-    inventario:INV?{rows:INV.rows.map(r=>({...r,vto:d(r.vto)})),map:INV.map,headers:INV.headers,sheet:INV.sheet,sheets:INV.sheets,bad:INV.bad,file:INV.file||''}:null,invAplicado:!!IMP,
+    inventario:INV?{rows:INV.rows.map(r=>({...r,vto:d(r.vto)})),map:INV.map,headers:INV.headers,sheet:INV.sheet,sheets:INV.sheets,bad:INV.bad,file:INV.file||''}:null,invAplicado:!!IMP,invCli:Object.fromEntries(Object.entries(INVC).filter(([,v])=>v).map(([k,v])=>[k,v.sample?{sample:true}:{rows:v.rows.map(r=>({...r,vto:d(r.vto)})),map:v.map,headers:v.headers,sheet:v.sheet,sheets:v.sheets,bad:v.bad,file:v.file||''}])),
     pedidos:PED?{...PED,orders:PED.orders.map(o=>({...o,comp:d(o.comp),ing:d(o.ing)}))}:null,fc:{rule:FC.rule,prod:FC.prod,target:d(FC.target)},kpis:[...KPI_ON]}},
   setState(s){if(!s||typeof s!=='object')return;const D=v=>v?new Date(v):null;
     if(s.config){if(!s.config.croq)delete C.croq;Object.assign(C,s.config);if(C.croq&&!croqOk(C.croq))delete C.croq;if(!Array.isArray(C.dockCfg))C.dockCfg=CROQ_DOCKS();
@@ -3022,7 +3074,8 @@ window.GD={
     INV=s.inventario?{...s.inventario,rows:s.inventario.rows.map(r=>({...r,vto:D(r.vto)}))}:null;
     PED=s.pedidos?{...s.pedidos,orders:s.pedidos.orders.map(o=>({...o,comp:D(o.comp),ing:D(o.ing)}))}:null;
     IMP=null;GEOMK=null;
-    if(s.invAplicado&&INV){try{applyInventory(INV)}catch(e){console.error(e);IMP=null}}
+    INVC={};if(s.invCli&&typeof s.invCli==='object')for(const[k,v]of Object.entries(s.invCli)){if(!v||!CLI_IDS().includes(k))continue;INVC[k]=v.sample?{sample:true,file:'Stock de ejemplo',rows:[]}:Array.isArray(v.rows)?{...v,rows:v.rows.map(r=>({...r,vto:D(r.vto)}))}:undefined;if(!INVC[k])delete INVC[k]}
+    {const MI=mergeInv();if(s.invAplicado&&MI){try{applyInventory(MI)}catch(e){console.error(e);IMP=null}}}
     if(!IMP){S=freshState(C);SNAPS.clear();snap();camFitted=false;buildLayout()}
     lastPredT=-99;$('#siteName').textContent=C.site;syncHor();renderConfig();renderDatos();renderPrep();
     if($('#drawer').classList.contains('open'))showTab(tab);dirty=true;updateUI(true)},
